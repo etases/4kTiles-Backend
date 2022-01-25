@@ -7,6 +7,8 @@
     <RootNamespace>_4kTiles_Backend</RootNamespace>
     <UserSecretsId>d3ea7c6a-05f5-4eea-a512-f397753c723d</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
