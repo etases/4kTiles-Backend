@@ -12,4 +12,4 @@
 - `Helpers`: The utility methods to be used in some classes
 
 ## Project Graph
-![graph](.github/images/ProjectGraph.png)
+![graph](.github/Images/ProjectGraph.png)
