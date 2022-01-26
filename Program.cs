@@ -60,7 +60,10 @@ var app = builder.Build();
 // if (app.Environment.IsDevelopment())
 // {
 app.UseSwagger();
-app.UseSwaggerUI();
+app.UseSwaggerUI(configs => {
+    configs.SwaggerEndpoint("/swagger/v1/swagger.json", "4kTiles API");
+    configs.RoutePrefix = "";
+});
 // }
 
 app.UseHttpsRedirection();
