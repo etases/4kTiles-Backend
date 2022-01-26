@@ -51,11 +51,7 @@ builder.Services.AddSwaggerGen(configs =>
     }
   });
 });
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-{
-    // TODO: Try to find a way to add connection string in Docker
-    // options.UseSqlServer("");
-});
+builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("SQLCONNSTR_development")));
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 var app = builder.Build();
