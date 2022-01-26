@@ -10,3 +10,6 @@
 - `Mappers`: Map properties from one object to another, use to convert `Entities` to `DataObjects` and vice versa
   - https://codelearn.io/sharing/su-dung-automapper-trong-csharp
 - `Helpers`: The utility methods to be used in some classes
+
+## Project Graph
+![graph](.github/images/ProjectGraph.png)
