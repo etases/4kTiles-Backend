@@ -51,7 +51,12 @@ builder.Services.AddSwaggerGen(configs =>
     }
   });
 });
-builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("SQLCONNSTR_development")));
+builder.Services.AddDbContextPool<ApplicationDbContext>(options =>
+{
+    options.UseSqlServer(builder.Environment.IsDevelopment()
+        ? builder.Configuration.GetConnectionString("DevelopmentDB")
+        : builder.Configuration.GetConnectionString("SQLCONNSTR_development"));
+});
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 var app = builder.Build();
