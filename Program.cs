@@ -1,5 +1,5 @@
 using _4kTiles_Backend.Context;
-using _4kTiles_Backend.Context.Repositories;
+using _4kTiles_Backend.Services.Repositories;
 using _4kTiles_Backend.Services.Auth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;

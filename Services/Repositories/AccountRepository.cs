@@ -1,7 +1,8 @@
 using AutoMapper;
 using _4kTiles_Backend.Entities;
+using _4kTiles_Backend.Context;
 
-namespace _4kTiles_Backend.Context.Repositories
+namespace _4kTiles_Backend.Services.Repositories
 {
     /// <summary>
     /// Account repository interface

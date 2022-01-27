@@ -1,5 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
-using _4kTiles_Backend.Context.Repositories;
+using _4kTiles_Backend.Services.Repositories;
 using _4kTiles_Backend.DataObjects.DTO.Auth;
 using _4kTiles_Backend.DataObjects.DTO.Response;
 using _4kTiles_Backend.Entities;
