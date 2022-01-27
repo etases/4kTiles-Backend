@@ -117,7 +117,7 @@ app.UseSwaggerUI(configs =>
 // Enable cors
 app.UseCors(builder =>
 {
-    builder.WithOrigins(new[] { "https://localhost" });
+    builder.WithOrigins(new[] { "https://localhost", "http://fktiles.azurewebsites.net" });
     builder.AllowAnyHeader();
     builder.AllowAnyMethod();
     builder.AllowCredentials();
