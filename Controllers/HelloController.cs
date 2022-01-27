@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace _4kTiles_Backend.Controllers
@@ -22,7 +23,8 @@ namespace _4kTiles_Backend.Controllers
         /// </summary>
         /// <param name="name">name to post</param>
         /// <returns>Hello with provided name</returns>
-        [HttpPost]
+        [HttpPost("Admin")]
+        [Authorize(Policy = "Manager")]
         public string PostHello(string name)
         {
             return $"Hello {name}";
@@ -33,7 +35,8 @@ namespace _4kTiles_Backend.Controllers
         /// </summary>
         /// <param name="people">people to patch</param>
         /// <returns>people</returns>
-        [HttpPatch]
+        [HttpPatch("User")]
+        [Authorize(Policy = "Creator")]
         public People PatchHello(People people)
         {
             return new People
