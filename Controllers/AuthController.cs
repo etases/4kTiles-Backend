@@ -121,42 +121,50 @@ namespace _4kTiles_Backend.Controllers
         [HttpPost("Login")]
         public IActionResult Login(AccountLoginDTO dto)
         {
-            string credentialErrorMessage = "Invalid credentials";
+            try
+            {
+                string credentialErrorMessage = "Invalid credentials";
 
-            // check if account with provided email exists
-            Account account = _accountRepository.getAccountByEmail(dto.Email);
+                // check if account with provided email exists
+                Account account = _accountRepository.getAccountByEmail(dto.Email);
 
-            Role role = _accountRepository.getAccountRoleById(account.AccountId);
+                Role role = _accountRepository.getAccountRoleById(account.AccountId);
 
-            // check if credentials are valid
-            if (
-                account == null ||
-                !BCrypt.Net.BCrypt.Verify(dto.Password, account.HashedPassword)
-            )
+                // check if credentials are valid
+                if (
+                    account == null ||
+                    !BCrypt.Net.BCrypt.Verify(dto.Password, account.HashedPassword)
+                )
+                    return BadRequest(new ResponseDTO
+                    {
+                        StatusCode = StatusCodes.Status400BadRequest,
+                        Message = credentialErrorMessage
+                    });
+
+                // generate JWT token
+                string token =
+                    _jwtService
+                        .GenerateAccountToken(_configuration
+                            .GetValue<string>("Jwt:securityKey"),
+                        account.AccountId, role.RoleName);
+
+                // return user information
+                return Ok(new ResponseDTO
+                {
+                    StatusCode = StatusCodes.Status200OK,
+                    Message = "Success",
+                    Data = new { Token = token }
+                });
+            }
+            catch (Exception ex)
+            {
                 return BadRequest(new ResponseDTO
                 {
                     StatusCode = StatusCodes.Status400BadRequest,
-                    Message = credentialErrorMessage
+                    Message = ex.Message,
+                    Data = ex.StackTrace,
                 });
-
-            // generate JWT token
-            string token =
-                _jwtService
-                    .GenerateAccountToken(_configuration
-                        .GetValue<string>("Jwt:securityKey"),
-                    account.AccountId, role.RoleName);
-
-            Response
-                .Cookies
-                .Append("token", token, new CookieOptions { HttpOnly = true });
-
-            // return user information
-            return Ok(new ResponseDTO
-            {
-                StatusCode = StatusCodes.Status200OK,
-                Message = "Success",
-                Data = new { Token = token }
-            });
+            }
         }
 
         /// <summary>
@@ -165,13 +173,10 @@ namespace _4kTiles_Backend.Controllers
         /// <returns>Account information</returns>
         [HttpGet("Account")]
         [Authorize]
-        public IActionResult GetAccount()
+        public IActionResult GetAccount(string token)
         {
             try
             {
-                // get token from cookie
-                string token = Request.Cookies["token"];
-
                 // check if token is valid
                 JwtSecurityToken verifiedToken =
                     _jwtService
