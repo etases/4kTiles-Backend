@@ -120,7 +120,6 @@ app.UseCors(builder =>
     builder.WithOrigins(new[] { "https://localhost", "http://fktiles.azurewebsites.net" });
     builder.AllowAnyHeader();
     builder.AllowAnyMethod();
-    builder.AllowCredentials();
 });
 
 app.UseHttpsRedirection();
