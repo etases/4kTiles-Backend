@@ -67,7 +67,7 @@ builder.Services.AddDbContextPool<ApplicationDbContext>(options =>
 {
     options.UseSqlServer(builder.Environment.IsDevelopment()
         ? builder.Configuration.GetConnectionString("DevelopmentDB")
-        : builder.Configuration.GetConnectionString("SQLCONNSTR_development"));
+        : builder.Configuration.GetConnectionString("development"));
 });
 
 // Add AutoMapper to the services
@@ -120,6 +120,7 @@ app.UseCors(builder =>
     builder.WithOrigins(new[] { "https://localhost", "http://fktiles.azurewebsites.net" });
     builder.AllowAnyHeader();
     builder.AllowAnyMethod();
+    builder.AllowCredentials();
 });
 
 app.UseHttpsRedirection();
