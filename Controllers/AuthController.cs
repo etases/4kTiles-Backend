@@ -148,6 +148,7 @@ namespace _4kTiles_Backend.Controllers
                             .GetValue<string>("Jwt:securityKey"),
                         account.AccountId, role.RoleName);
 
+                Response.Cookies.Append("token", token);
                 // return user information
                 return Ok(new ResponseDTO
                 {
@@ -173,10 +174,11 @@ namespace _4kTiles_Backend.Controllers
         /// <returns>Account information</returns>
         [HttpGet("Account")]
         [Authorize]
-        public IActionResult GetAccount(string token)
+        public IActionResult GetAccount()
         {
             try
             {
+                string? token = Request.Cookies["token"];
                 // check if token is valid
                 JwtSecurityToken verifiedToken =
                     _jwtService
