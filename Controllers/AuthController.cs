@@ -3,6 +3,7 @@ using _4kTiles_Backend.Services.Repositories;
 using _4kTiles_Backend.DataObjects.DTO.Auth;
 using _4kTiles_Backend.DataObjects.DTO.Response;
 using _4kTiles_Backend.Entities;
+using _4kTiles_Backend.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using _4kTiles_Backend.Services.Auth;
@@ -61,8 +62,7 @@ namespace _4kTiles_Backend.Controllers
                 {
                     UserName = dto.UserName,
                     // hash password
-                    HashedPassword =
-                        BCrypt.Net.BCrypt.HashPassword(dto.Password),
+                    HashedPassword = dto.Password.Hash(),
                     Email = dto.Email
                 };
 
@@ -98,8 +98,7 @@ namespace _4kTiles_Backend.Controllers
                 {
                     UserName = dto.UserName,
                     // hash password
-                    HashedPassword =
-                        BCrypt.Net.BCrypt.HashPassword(dto.Password),
+                    HashedPassword = dto.Password.Hash(),
                     Email = dto.Email
                 };
 
@@ -132,8 +131,7 @@ namespace _4kTiles_Backend.Controllers
 
                 // check if credentials are valid
                 if (
-                    account == null ||
-                    !BCrypt.Net.BCrypt.Verify(dto.Password, account.HashedPassword)
+                    account == null || dto.Password.VerifyHash(account.HashedPassword)
                 )
                     return BadRequest(new ResponseDTO
                     {
