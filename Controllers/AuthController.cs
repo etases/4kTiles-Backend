@@ -152,7 +152,7 @@ namespace _4kTiles_Backend.Controllers
                 Response.Cookies.Append("token", token);
 
                 // return user information
-                return Ok(new ResponseDTO<dynamic>
+                return Ok(new DynamicResponseDTO
                 {
                     StatusCode = StatusCodes.Status200OK,
                     Message = "Success",
