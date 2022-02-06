@@ -75,6 +75,7 @@ builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 // Add the repository to the services
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
+builder.Services.AddScoped<ILibraryService, LibraryService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 
 // Add authentication to the services
