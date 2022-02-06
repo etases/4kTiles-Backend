@@ -53,7 +53,7 @@ namespace _4kTiles_Backend.Controllers
                 return BadRequest(new DynamicResponseDTO
                 {
                     StatusCode = StatusCodes.Status400BadRequest,
-                    ErrorCode = 1,
+                    IsError = true,
                     Message = "Account with provided email already exists"
                 });
 
@@ -90,7 +90,7 @@ namespace _4kTiles_Backend.Controllers
                 return BadRequest(new DynamicResponseDTO
                 {
                     StatusCode = StatusCodes.Status400BadRequest,
-                    ErrorCode = 1,
+                    IsError = true,
                     Message = "Account with provided email already exists"
                 });
 
@@ -138,7 +138,7 @@ namespace _4kTiles_Backend.Controllers
                     return BadRequest(new DynamicResponseDTO
                     {
                         StatusCode = StatusCodes.Status400BadRequest,
-                        ErrorCode = 1,
+                        IsError = true,
                         Message = credentialErrorMessage
                     });
 
@@ -220,7 +220,7 @@ namespace _4kTiles_Backend.Controllers
                 return BadRequest(new DynamicResponseDTO
                 {
                     StatusCode = StatusCodes.Status400BadRequest,
-                    ErrorCode = 1,
+                    IsError = true,
                     Message = "Invalid token" ?? ex.Message
                 });
             }

@@ -11,7 +11,12 @@ namespace _4kTiles_Backend.DataObjects.DTO.Response
         public int ErrorCode { get; set; } = 0;
         public string Message { get; set; } = string.Empty;
         public T? Data { get; set; }
-        public bool IsError => ErrorCode != 0;
+
+        public bool IsError
+        {
+            get => ErrorCode != 0;
+            set => ErrorCode = value == true ? 1 : 0;
+        }
     }
 
     public record DynamicResponseDTO : ResponseDTO<dynamic> {}
