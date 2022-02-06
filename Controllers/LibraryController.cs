@@ -17,14 +17,11 @@ namespace _4kTiles_Backend.Controllers
     [ApiController]
     public class LibraryController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
-        private readonly IAccountRepository _accountRepository;
+
         private readonly ILibraryService _libraryService;
 
-        public LibraryController(ApplicationDbContext context, IAccountRepository accountRepository, ILibraryService libraryService)
+        public LibraryController( ILibraryService libraryService)
         {
-            _accountRepository = accountRepository;
-            _context = context;
             _libraryService = libraryService;
         }
 
@@ -32,21 +29,21 @@ namespace _4kTiles_Backend.Controllers
         [HttpGet]
         public async Task<IActionResult> GetPublicSongs()
         {
-            var public_song = _libraryService.GetPublicSongs();
-            return Ok(new { public_song, message = "Get public songs" });
+            var publicSong = _libraryService.GetPublicSongs();
+            return Ok(new { publicSong, message = "Get public songs" });
         }
 
         // Post: api/Library
         [HttpPost]
         public async Task<IActionResult> GetPrivateSongs([FromBody] LibraryUserIdDTO User)
         {
-            var account_song = _libraryService.GetPrivateSongs(User.user_id);
-            if (account_song == null)
+            var accountSong = _libraryService.GetPrivateSongs(User.Id);
+            if (accountSong == null)
             {
-                return BadRequest(new { account_song, message = "User Id is Invalid (id= " + User.user_id + ")" });
+                return BadRequest(new { accountSong, message = "User Id is Invalid (id= " + User.Id + ")" });
             }
 
-            return Ok(new { account_song, message = "Get songs of " + account_song[0].Author + " (id= " + User.user_id + ")" });
+            return Ok(new { accountSong, message = "Get songs of " + accountSong[0].Author + " (id= " + User.Id + ")" });
         }
 
         // Oost: api/Library/search
@@ -62,10 +59,6 @@ namespace _4kTiles_Backend.Controllers
             return Ok(new { result, message = "Get songs by filter" });
         }
 
-        
-        private bool SongExists(int id)
-        {
-            return _context.Songs.Any(e => e.SongId == id);
-        }
+
     }
 }

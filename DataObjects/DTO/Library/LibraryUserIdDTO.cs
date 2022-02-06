@@ -7,5 +7,5 @@ namespace _4kTiles_Backend.DataObjects.DTO.LibraryFilterDTO;
 
 public class LibraryUserIdDTO
 {
-    public int user_id { get; set; }
+    public int Id { get; set; }
 }

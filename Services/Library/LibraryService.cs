@@ -10,7 +10,7 @@ namespace _4kTiles_Backend.Services.Repositories
     {
         List<Song>? GetPublicSongs();
         List<Song>? GetPrivateSongs(int id);
-        List<Song>? GetSongByFilters(LibraryFilterDTO Filter);
+        List<Song>? GetSongByFilters(LibraryFilterDTO filter);
 
 
     }
@@ -33,8 +33,8 @@ namespace _4kTiles_Backend.Services.Repositories
 
         List<Song>? ILibraryService.GetPublicSongs()
         {
-            var public_song = _context.Songs.Where(s => s.IsPublic == true).ToList();
-            return public_song;
+            var publicSong = _context.Songs.Where(s => s.IsPublic == true).ToList();
+            return publicSong;
         }
 
         List<Song>? ILibraryService.GetPrivateSongs(int id)
@@ -45,33 +45,32 @@ namespace _4kTiles_Backend.Services.Repositories
                 return null;
             }
             string name = account.UserName;
-            var account_song = _context.Songs.Where(s => s.Author == name).ToList();
+            var accountSong = _context.Songs.Where(s => s.Author == name).ToList();
 
-            return account_song;
+            return accountSong;
         }
 
-        List<Song>? ILibraryService.GetSongByFilters(LibraryFilterDTO Filter)
+        List<Song>? ILibraryService.GetSongByFilters(LibraryFilterDTO filter)
         {
             var songQ = _context.Songs.Where(s => s.IsPublic == true);
-            if (Filter.name != "")
+            if (filter.Name != "")
             {
-                songQ = songQ.Where(s => s.SongName.ToLower().Equals(Filter.name.Trim().ToLower()));
+                songQ = songQ.Where(s => s.SongName.ToLower().Equals(filter.Name.Trim().ToLower()));
             }
             // song by SongName
 
-            if (Filter.author != "")
+            if (filter.Author != "")
             {
-                songQ = songQ.Where(s => s.Author.ToLower().Equals(Filter.author.Trim().ToLower()));
+                songQ = songQ.Where(s => s.Author.ToLower().Equals(filter.Author.Trim().ToLower()));
             }
             //song by author
 
             var result = songQ.ToList();
 
-            if (Filter.tag != "")
+            if (filter.Tag != "")
             {
                 List<int> list = new List<int>();
-                string[] tags = Filter.tag.Split("#");
-                int[] tag_songId = new int[] { };
+                string[] tags = filter.Tag.Split("#");
                 foreach (string tag in tags)
                 {
                     if (tag != "")
@@ -91,16 +90,16 @@ namespace _4kTiles_Backend.Services.Repositories
             return result;
         }
 
-        private List<int>? TagFilter(string tagname)
+        private List<int>? TagFilter(string tagName)
         {
-            var tag = _context.Tags.Where(t => t.TagName.Trim().ToLower().Equals(tagname.Trim().ToLower())).FirstOrDefault();
+            var tag = _context.Tags.Where(t => t.TagName.Trim().ToLower().Equals(tagName.Trim().ToLower())).FirstOrDefault();
             if (tag == null)
             {
                 return null;
             }
 
-            var songid = _context.SongTags.Where(s => s.TagId == tag.TagId).Select(s => s.SongId).ToList();
-            return songid;
+            var songId = _context.SongTags.Where(s => s.TagId == tag.TagId).Select(s => s.SongId).ToList();
+            return songId;
         }
 
     }
