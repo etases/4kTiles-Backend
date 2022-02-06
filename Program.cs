@@ -110,7 +110,7 @@ builder.Services.AddControllers().AddJsonOptions(options =>
         new BadRequestObjectResult(new ResponseDTO<ModelStateDictionary>
         {
             StatusCode = 400,
-            IsError = true,
+            ErrorCode = -1990,
             Message = "Input value is(are) invalid",
             Data = actionContext.ModelState
         });
