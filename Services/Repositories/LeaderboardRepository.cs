@@ -8,17 +8,11 @@ namespace _4kTiles_Backend.Services.Repositories
     public interface ILeaderboardRepository
     {
         List<LeaderboardAccountDTO>
-        getTopNLeaderboardBySongId(
-            int songId, int? n
-        );
+        GetTopNLeaderboardBySongId(int songId, int n);
 
-        List<LeaderboardUserDTO> getTopOneByUserId(
-            int accountId
-        );
+        List<LeaderboardUserDTO> GetTopOneByUserId(int accountId);
 
-        AccountSong addUserBestScore(
-            int accountId, int songId, int score
-        );
+        AccountSong AddUserBestScore(int accountId, int songId, int score);
     }
 
     public class LeaderboardRepository : ILeaderboardRepository
@@ -30,7 +24,7 @@ namespace _4kTiles_Backend.Services.Repositories
             _context = context;
         }
 
-        public AccountSong addUserBestScore(int accountId, int songId, int score)
+        public AccountSong AddUserBestScore(int accountId, int songId, int score)
         {
             AccountSong accountSong = _context.AccountSongs.FirstOrDefault(
                 x => x.AccountId == accountId && x.SongId == songId
@@ -58,14 +52,14 @@ namespace _4kTiles_Backend.Services.Repositories
         }
 
         public List<LeaderboardAccountDTO>
-        getTopNLeaderboardBySongId(int songId, int? n)
+        GetTopNLeaderboardBySongId(int songId, int n)
         {
             List<AccountSong> leaderboard =
                 _context
                     .AccountSongs
                     .Where(x => x.SongId == songId)
                     .OrderByDescending(x => x.BestScore)
-                    .Take(n ?? 10)
+                    .Take(n)
                     .ToList();
 
             List<LeaderboardAccountDTO> leaderboardAccount =
@@ -84,13 +78,13 @@ namespace _4kTiles_Backend.Services.Repositories
                         .UserName;
                 leaderboardAccountDTO.BestScore = accountSong.BestScore;
 
-                leaderboardAccount.Add (leaderboardAccountDTO);
+                leaderboardAccount.Add(leaderboardAccountDTO);
             }
 
             return leaderboardAccount;
         }
 
-        public List<LeaderboardUserDTO> getTopOneByUserId(int accountId)
+        public List<LeaderboardUserDTO> GetTopOneByUserId(int accountId)
         {
             List<AccountSong> leaderboard =
                 _context.AccountSongs.AsEnumerable()

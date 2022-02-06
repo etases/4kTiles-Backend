@@ -1,8 +1,9 @@
 using _4kTiles_Backend.DataObjects.DTO.LeaderboardDTO;
 using _4kTiles_Backend.DataObjects.DTO.Response;
 using _4kTiles_Backend.Entities;
-using Microsoft.AspNetCore.Mvc;
 using _4kTiles_Backend.Services.Repositories;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace _4kTiles_Backend.Controllers
 {
@@ -12,38 +13,38 @@ namespace _4kTiles_Backend.Controllers
     {
         private readonly ILeaderboardRepository _leaderboardRepository;
 
-        public LeaderboardController(
-            ILeaderboardRepository leaderboardRepository
-        )
+        public LeaderboardController(ILeaderboardRepository leaderboardRepository)
         {
             _leaderboardRepository = leaderboardRepository;
         }
 
-        [HttpGet("getTopNLeaderboardBySongId/{songId}/{n}")]
-        public IActionResult GetLeaderboardBySongId(int songId, int? limit)
+        [HttpGet("Song/{songId}/{limit?}")]
+        public IActionResult GetLeaderboardBySongId(int songId, int limit = 10)
         {
             List<LeaderboardAccountDTO> leaderboard =
                 _leaderboardRepository
-                    .getTopNLeaderboardBySongId(songId, limit);
+                    .GetTopNLeaderboardBySongId(songId, limit);
             return Ok(leaderboard);
         }
 
-        [HttpGet("getTopOneByUserId/{accountId}")]
+        [HttpGet("Account/{accountId}")]
         public IActionResult GetLeaderboardByUserId(int accountId)
         {
             List<LeaderboardUserDTO> leaderboard =
-                _leaderboardRepository
-                    .getTopOneByUserId(accountId);
+                _leaderboardRepository.GetTopOneByUserId(accountId);
             return Ok(leaderboard);
         }
 
         [HttpPut]
-        public IActionResult AddUserBestScore(int accountId, int songId, int score)
+        [Authorize]
+        public IActionResult
+        AddUserBestScore(int accountId, int songId, int score)
         {
             AccountSong accountSong =
                 _leaderboardRepository
-                    .addUserBestScore(accountId, songId, score);
-            return Ok(new ResponseDTO {
+                    .AddUserBestScore(accountId, songId, score);
+            return Ok(new ResponseDTO
+            {
                 StatusCode = StatusCodes.Status200OK,
                 Message = "Successfully added user best score",
                 Data = accountSong
