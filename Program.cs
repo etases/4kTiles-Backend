@@ -7,6 +7,9 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
 using System.Text;
+using _4kTiles_Backend.DataObjects.DTO.Response;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 // --------------------------------------------------
 // create builder instance
@@ -21,7 +24,6 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(configs =>
 {
-    configs.CustomSchemaIds(type => type.FullName.Split('.').Last().Replace("DTO", ""));
     // API information
     configs.SwaggerDoc("v1", new OpenApiInfo
     {
@@ -47,19 +49,20 @@ builder.Services.AddSwaggerGen(configs =>
     });
 
     // Make sure swagger UI requires a Bearer token specified
-    configs.AddSecurityRequirement(new OpenApiSecurityRequirement {
-   {
-     new OpenApiSecurityScheme
-     {
-       Reference = new OpenApiReference
-       {
-         Type = ReferenceType.SecurityScheme,
-         Id = "Bearer"
-       }
-      },
-      new string[] { }
-    }
-  });
+    configs.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
 });
 
 // Add the database context to the services
@@ -90,10 +93,27 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+// Add Authorization Policies
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("Manager", policy => policy.RequireRole(new[] { "Admin" }));
     options.AddPolicy("Creator", policy => policy.RequireRole(new[] { "User" }));
+});
+
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+}).ConfigureApiBehaviorOptions(opt =>
+{
+    // Custom Model State response object
+    opt.InvalidModelStateResponseFactory = actionContext =>
+        new BadRequestObjectResult(new ResponseDTO<ModelStateDictionary>
+        {
+            StatusCode = 400,
+            ErrorCode = 1,
+            Message = "Input value is(are) invalid",
+            Data = actionContext.ModelState
+        });
 });
 
 // Add cors
@@ -115,12 +135,12 @@ app.UseSwaggerUI(configs =>
 // }
 
 // Enable cors
-app.UseCors(builder =>
+app.UseCors(corsPolicyBuilder =>
 {
-    builder.WithOrigins(new[] { "https://localhost", "http://fktiles.azurewebsites.net" });
-    builder.AllowAnyHeader();
-    builder.AllowAnyMethod();
-    builder.AllowCredentials();
+    corsPolicyBuilder.WithOrigins(new[] { "https://localhost", "http://fktiles.azurewebsites.net" });
+    corsPolicyBuilder.AllowAnyHeader();
+    corsPolicyBuilder.AllowAnyMethod();
+    corsPolicyBuilder.AllowCredentials();
 });
 
 app.UseHttpsRedirection();

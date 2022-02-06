@@ -46,13 +46,14 @@ namespace _4kTiles_Backend.Controllers
         /// <param name="dto">Account information</param>
         /// <returns></returns>
         [HttpPost("RegisterUser")]
-        public IActionResult RegisterUser(AccountRegisterDTO dto)
+        public ActionResult<DynamicResponseDTO> RegisterUser(AccountRegisterDTO dto)
         {
             // check if account with provided email already exists
             if (_accountRepository.getAccountByEmail(dto.Email) != null)
-                return BadRequest(new ResponseDTO
+                return BadRequest(new DynamicResponseDTO
                 {
                     StatusCode = StatusCodes.Status400BadRequest,
+                    ErrorCode = 1,
                     Message = "Account with provided email already exists"
                 });
 
@@ -69,7 +70,7 @@ namespace _4kTiles_Backend.Controllers
             // save account
             _accountRepository.createUserAccount(account);
             return Created("success",
-            new ResponseDTO
+            new DynamicResponseDTO
             {
                 StatusCode = StatusCodes.Status201Created,
                 Message = "Account created"
@@ -82,13 +83,14 @@ namespace _4kTiles_Backend.Controllers
         /// <param name="dto">Account information</param>
         /// <returns></returns>
         [HttpPost("RegisterAdmin")]
-        public IActionResult RegisterAdmin(AccountRegisterDTO dto)
+        public ActionResult<DynamicResponseDTO> RegisterAdmin(AccountRegisterDTO dto)
         {
             // check if account with provided email already exists
             if (_accountRepository.getAccountByEmail(dto.Email) != null)
-                return BadRequest(new ResponseDTO
+                return BadRequest(new DynamicResponseDTO
                 {
                     StatusCode = StatusCodes.Status400BadRequest,
+                    ErrorCode = 1,
                     Message = "Account with provided email already exists"
                 });
 
@@ -105,7 +107,7 @@ namespace _4kTiles_Backend.Controllers
             // save account
             _accountRepository.createAdminAccount(account);
             return Created("success",
-            new ResponseDTO
+            new DynamicResponseDTO
             {
                 StatusCode = StatusCodes.Status201Created,
                 Message = "Account created"
@@ -118,7 +120,7 @@ namespace _4kTiles_Backend.Controllers
         /// <param name="dto">Account information</param>
         /// <returns>User information</returns>
         [HttpPost("Login")]
-        public IActionResult Login(AccountLoginDTO dto)
+        public ActionResult<DynamicResponseDTO> Login(AccountLoginDTO dto)
         {
             try
             {
@@ -133,9 +135,10 @@ namespace _4kTiles_Backend.Controllers
                 if (
                     account == null || dto.Password.VerifyHash(account.HashedPassword)
                 )
-                    return BadRequest(new ResponseDTO
+                    return BadRequest(new DynamicResponseDTO
                     {
                         StatusCode = StatusCodes.Status400BadRequest,
+                        ErrorCode = 1,
                         Message = credentialErrorMessage
                     });
 
@@ -149,7 +152,7 @@ namespace _4kTiles_Backend.Controllers
                 Response.Cookies.Append("token", token);
 
                 // return user information
-                return Ok(new ResponseDTO
+                return Ok(new ResponseDTO<dynamic>
                 {
                     StatusCode = StatusCodes.Status200OK,
                     Message = "Success",
@@ -158,9 +161,10 @@ namespace _4kTiles_Backend.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new ResponseDTO
+                return BadRequest(new DynamicResponseDTO
                 {
                     StatusCode = StatusCodes.Status400BadRequest,
+                    ErrorCode = 2,
                     Message = ex.Message,
                     Data = ex.StackTrace,
                 });
@@ -173,7 +177,7 @@ namespace _4kTiles_Backend.Controllers
         /// <returns>Account information</returns>
         [HttpGet("Account")]
         [Authorize]
-        public IActionResult GetAccount()
+        public ActionResult<DynamicResponseDTO> GetAccount()
         {
             try
             {
@@ -198,7 +202,7 @@ namespace _4kTiles_Backend.Controllers
                 Account account = _accountRepository.getAccountById(accountId);
 
                 // return user information
-                return Ok(new ResponseDTO
+                return Ok(new DynamicResponseDTO
                 {
                     StatusCode = StatusCodes.Status200OK,
                     Message = "Success",
@@ -213,9 +217,10 @@ namespace _4kTiles_Backend.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new ResponseDTO
+                return BadRequest(new DynamicResponseDTO
                 {
                     StatusCode = StatusCodes.Status400BadRequest,
+                    ErrorCode = 1,
                     Message = "Invalid token" ?? ex.Message
                 });
             }
@@ -227,10 +232,10 @@ namespace _4kTiles_Backend.Controllers
         /// <returns>Cleared cookie</returns>
         [HttpPost("Logout")]
         [Authorize]
-        public IActionResult Logout()
+        public ActionResult<DynamicResponseDTO> Logout()
         {
             Response.Cookies.Delete("token");
-            return Ok(new ResponseDTO
+            return Ok(new DynamicResponseDTO
             {
                 StatusCode = StatusCodes.Status200OK,
                 Message = "Success"
