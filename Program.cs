@@ -77,6 +77,7 @@ builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 builder.Services.AddScoped<ILeaderboardRepository, LeaderboardRepository>();
 builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddScoped<ISongRepository, SongRepository>();
 
 // Add authentication to the services
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
