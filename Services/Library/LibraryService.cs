@@ -11,6 +11,7 @@ namespace _4kTiles_Backend.Services.Repositories
         List<Song>? GetPublicSongs();
         List<Song>? GetPrivateSongs(int id);
         List<Song>? GetSongByFilters(LibraryFilterDTO filter);
+        List<Song>? GetSongByGenre(string name);
 
 
     }
@@ -78,7 +79,7 @@ namespace _4kTiles_Backend.Services.Repositories
                         var add = TagFilter(tag);
                         if (add != null)
                         {
-                            list.AddRange(TagFilter(tag));
+                            list.AddRange(add);
                         }
 
                     }
@@ -102,5 +103,35 @@ namespace _4kTiles_Backend.Services.Repositories
             return songId;
         }
 
+
+        public List<Song>? GetSongByGenre(string name)
+        {
+            List<int> list = new List<int>();
+            var add = (GenreFilter(name));
+            if (add != null)
+            {
+                list.AddRange(add);
+            }
+            else
+            {
+                return null;
+            }
+            var result = _context.Songs.Where(s => s.IsPublic == true).ToList();
+            result.RemoveAll(s => !list.Contains(s.SongId));
+
+            return result;
+        }
+        private List<int>? GenreFilter(string genreName)
+        {
+            var genre = _context.Genres.Where(g => g.GenreName == genreName).FirstOrDefault();
+            var songByGenre = _context.SongGenres.Where(s => s.GenreId == genre.GenreId).Select(s => s.SongId).ToList();
+            if (songByGenre == null)
+            {
+                return null;
+            }
+
+            var songId = _context.SongGenres.Where(s => s.GenreId == genre.GenreId).Select(s => s.SongId).ToList();
+            return songId;
+        }
     }
 }
