@@ -6,7 +6,7 @@ using _4kTiles_Backend.Entities;
 
 namespace _4kTiles_Backend.Services.Repositories
 {
-    public interface ILibraryService
+    public interface ILibraryRepository
     {
         List<Song>? GetPublicSongs();
         List<Song>? GetPrivateSongs(int id);
@@ -20,11 +20,11 @@ namespace _4kTiles_Backend.Services.Repositories
 
 
 
-    public class LibraryService : ILibraryService
+    public class LibraryRepository : ILibraryRepository
     {
         private readonly ApplicationDbContext _context;
         private readonly IAccountRepository _accountRepository;
-        public LibraryService(ApplicationDbContext context, IAccountRepository accountRepository)
+        public LibraryRepository(ApplicationDbContext context, IAccountRepository accountRepository)
         {
             _accountRepository = accountRepository;
             _context = context;
@@ -32,13 +32,13 @@ namespace _4kTiles_Backend.Services.Repositories
 
 
 
-        List<Song>? ILibraryService.GetPublicSongs()
+        List<Song>? ILibraryRepository.GetPublicSongs()
         {
             var publicSong = _context.Songs.Where(s => s.IsPublic == true).ToList();
             return publicSong;
         }
 
-        List<Song>? ILibraryService.GetPrivateSongs(int id)
+        List<Song>? ILibraryRepository.GetPrivateSongs(int id)
         {
             var account = _accountRepository.getAccountById(id);
             if (account == null)
@@ -51,7 +51,7 @@ namespace _4kTiles_Backend.Services.Repositories
             return accountSong;
         }
 
-        List<Song>? ILibraryService.GetSongByFilters(LibraryFilterDTO filter)
+        List<Song>? ILibraryRepository.GetSongByFilters(LibraryFilterDTO filter)
         {
             var songQ = _context.Songs.Where(s => s.IsPublic == true);
             if (filter.Name != "")

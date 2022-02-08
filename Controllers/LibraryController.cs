@@ -20,9 +20,9 @@ namespace _4kTiles_Backend.Controllers
     public class LibraryController : ControllerBase
     {
 
-        private readonly ILibraryService _libraryService;
+        private readonly ILibraryRepository _libraryService;
 
-        public LibraryController(ILibraryService libraryService)
+        public LibraryController(ILibraryRepository libraryService)
         {
             _libraryService = libraryService;
         }
