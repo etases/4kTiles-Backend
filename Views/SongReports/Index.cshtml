@@ -1,0 +1,65 @@
+﻿@model IEnumerable<_4kTiles_Backend.Entities.SongReport>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.ReportTitle)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ReportReason)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ReportDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ReportStatus)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Account)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Song)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.ReportTitle)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ReportReason)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ReportDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ReportStatus)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Account.AccountId)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Song.SongId)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.ReportId">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.ReportId">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.ReportId">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace _4kTiles_Backend.DataObjects.DTO.LibraryFilterDTO;
-
-public class LibraryUserIdDTO
+namespace _4kTiles_Backend.DataObjects.DTO.LibraryFilterDTO
 {
-    public int Id { get; set; }
+    public class LibraryUserIdDTO
+    {
+        public int Id { get; set; }
+    }
 }
+
