@@ -131,7 +131,7 @@ namespace _4kTiles_Backend.Controllers
 
                 // check if credentials are valid
                 if (
-                    account == null || dto.Password.VerifyHash(account.HashedPassword)
+                    account == null || !dto.Password.VerifyHash(account.HashedPassword)
                 )
                     return BadRequest(new ResponseDTO
                     {
