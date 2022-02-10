@@ -45,7 +45,7 @@ namespace _4kTiles_Backend.Controllers
         [HttpPost]
         public async Task<IActionResult> GetPrivateSongs([FromBody] LibraryUserIdDTO User)
         {
-            var accountSong = _libraryService.GetPrivateSongs(User.Id);
+            var accountSong = await _libraryService.GetPrivateSongs(User.Id);
             if (accountSong == null)
             {
                 return BadRequest(new ResponseDTO
