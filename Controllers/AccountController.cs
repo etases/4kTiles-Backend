@@ -13,14 +13,14 @@ namespace _4kTiles_Backend.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class AuthController : ControllerBase
+    public class AccountController : ControllerBase
     {
         private readonly IAccountRepository _accountRepository;
         private readonly IJwtService _jwtService;
         private readonly IConfiguration _configuration;
         private readonly IMapper _mapper;
 
-        public AuthController(
+        public AccountController(
             IAccountRepository accountRepository,
             IJwtService jwtService,
             IConfiguration configuration,
