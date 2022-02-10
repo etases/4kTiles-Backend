@@ -9,7 +9,7 @@ namespace _4kTiles_Backend.Services.Repositories
     public interface ILibraryRepository
     {
         List<Song>? GetPublicSongs();
-        List<Song>? GetPrivateSongs(int id);
+        Task<List<Song>?> GetPrivateSongs(int id);
         List<Song>? GetSongByFilters(LibraryFilterDTO filter);
         List<Song>? GetSongByGenre(string name);
 
@@ -38,9 +38,9 @@ namespace _4kTiles_Backend.Services.Repositories
             return publicSong;
         }
 
-        List<Song>? ILibraryRepository.GetPrivateSongs(int id)
+        async Task<List<Song>?> ILibraryRepository.GetPrivateSongs(int id)
         {
-            var account = _accountRepository.getAccountById(id);
+            var account = await _accountRepository.GetAccountById(id);
             if (account == null)
             {
                 return null;
