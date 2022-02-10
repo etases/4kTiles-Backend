@@ -10,60 +10,60 @@ namespace _4kTiles_Backend.Services.Auth
     public interface IJwtService
     {
         // Generate a JWT token
-        string GenerateAccountToken(string secureKey, int accountId, string roleName);
+        string GenerateAccountToken(string secureKey, int accountId, ICollection<string> roleName);
 
         // Validate a JWT token
-        JwtSecurityToken VerifyToken(string secretKey, string token);
+        JwtSecurityToken? VerifyToken(string secretKey, string token);
     }
 
 
     public class JwtService : IJwtService
     {
-        private JwtSecurityTokenHandler _jwtSecurityTokenHandler;
+        private readonly JwtSecurityTokenHandler _jwtSecurityTokenHandler;
+
+        public JwtService()
+        {
+            _jwtSecurityTokenHandler = new JwtSecurityTokenHandler();
+        }
 
         /// <summary>
         /// Generate a JWT token
         /// </summary>
         /// <param name="secureKey">Secure key</param>
         /// <param name="accountId">Account Id from database</param>
+        /// <param name="roleName"></param>
         /// <returns>token string</returns>
-        public string GenerateAccountToken(string secureKey, int accountId, string roleName)
+        public string GenerateAccountToken(string secureKey, int accountId, ICollection<string> roleName)
         {
-            List<Claim> claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.Role, roleName),
-                new Claim("accountId", accountId.ToString()),
-            };
+            var claims = new List<Claim> { new Claim("accountId", accountId.ToString()) };
+            claims.AddRange(roleName.Select(role => new Claim(ClaimTypes.Role, role)));
 
             // Generate a new security key
-            SymmetricSecurityKey securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secureKey));
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secureKey));
 
             // Generate a new signing credentials using the security key
-            SigningCredentials credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256Signature);
+            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256Signature);
 
             // Generate a new JWT token
-            JwtSecurityToken token = new JwtSecurityToken(
+            var token = new JwtSecurityToken(
                 claims: claims,
                 expires: DateTime.Now.AddMinutes(30),
                 signingCredentials: credentials
             );
-            _jwtSecurityTokenHandler = new JwtSecurityTokenHandler();
-            // Generate a new JwtSecurityTokenHandler
+            // Write token
             return _jwtSecurityTokenHandler.WriteToken(token);
         }
 
-        public JwtSecurityToken VerifyToken(string secureKey, string token)
+        public JwtSecurityToken? VerifyToken(string secureKey, string token)
         {
-            Byte[] key = Encoding.ASCII.GetBytes(secureKey);
-            _jwtSecurityTokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.ASCII.GetBytes(secureKey);
             _jwtSecurityTokenHandler.ValidateToken(token, new TokenValidationParameters
             {
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = new SymmetricSecurityKey(key),
                 ValidateIssuer = false,
                 ValidateAudience = false
-            }, out SecurityToken validatedToken);
-
+            }, out var validatedToken);
             return validatedToken as JwtSecurityToken;
         }
     }

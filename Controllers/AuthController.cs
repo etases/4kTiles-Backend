@@ -1,12 +1,13 @@
-using System.IdentityModel.Tokens.Jwt;
+using _4kTiles_Backend.DataObjects.DAO.Account;
 using _4kTiles_Backend.Services.Repositories;
 using _4kTiles_Backend.DataObjects.DTO.Auth;
 using _4kTiles_Backend.DataObjects.DTO.Response;
-using _4kTiles_Backend.Entities;
-using _4kTiles_Backend.Helpers;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using _4kTiles_Backend.Services.Auth;
+
+using AutoMapper;
 
 namespace _4kTiles_Backend.Controllers
 {
@@ -14,30 +15,22 @@ namespace _4kTiles_Backend.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        // AccountRepository is injected by the DI container.
         private readonly IAccountRepository _accountRepository;
-
-        // JwtService is injected by the DI container.
         private readonly IJwtService _jwtService;
-
-        // Configuration is injected by the DI container.
         private readonly IConfiguration _configuration;
+        private readonly IMapper _mapper;
 
-        /// <summary>
-        /// AuthController constructor
-        /// </summary>
-        /// <param name="accountRepository">AccountRepository</param>
-        /// <param name="jwtService">JWTService</param>
-        /// <param name="configuration">Configuration</param>
         public AuthController(
             IAccountRepository accountRepository,
             IJwtService jwtService,
-            IConfiguration configuration
+            IConfiguration configuration,
+            IMapper mapper
         )
         {
             _accountRepository = accountRepository;
             _jwtService = jwtService;
             _configuration = configuration;
+            _mapper = mapper;
         }
 
         /// <summary>
@@ -46,34 +39,30 @@ namespace _4kTiles_Backend.Controllers
         /// <param name="dto">Account information</param>
         /// <returns></returns>
         [HttpPost("RegisterUser")]
-        public IActionResult RegisterUser(AccountRegisterDTO dto)
+        public async Task<IActionResult> RegisterUser(AccountRegisterDTO dto)
         {
-            // check if account with provided email already exists
-            if (_accountRepository.getAccountByEmail(dto.Email) != null)
+            var dao = _mapper.Map<CreateAccountDAO>(dto);
+            dao.Roles.Add("User");
+
+            AccountDAO? account = await _accountRepository.CreateAccount(dao);
+
+            // check if account with provided email already exists (created account is null)
+            if (account == null)
+            {
                 return BadRequest(new ResponseDTO
                 {
                     StatusCode = StatusCodes.Status400BadRequest,
                     Message = "Account with provided email already exists"
                 });
-
-            // create new account
-            Account account =
-                new Account
-                {
-                    UserName = dto.UserName,
-                    // hash password
-                    HashedPassword = dto.Password.Hash(),
-                    Email = dto.Email
-                };
-
-            // save account
-            _accountRepository.createUserAccount(account);
-            return Created("success",
-            new ResponseDTO
+            }
+            else
             {
-                StatusCode = StatusCodes.Status201Created,
-                Message = "Account created"
-            });
+                return Created("success", new ResponseDTO 
+                {
+                    StatusCode = StatusCodes.Status201Created,
+                    Message = "Account created"
+                });
+            }
         }
 
         /// <summary>
@@ -82,34 +71,31 @@ namespace _4kTiles_Backend.Controllers
         /// <param name="dto">Account information</param>
         /// <returns></returns>
         [HttpPost("RegisterAdmin")]
-        public IActionResult RegisterAdmin(AccountRegisterDTO dto)
+        public async Task<IActionResult> RegisterAdmin(AccountRegisterDTO dto)
         {
-            // check if account with provided email already exists
-            if (_accountRepository.getAccountByEmail(dto.Email) != null)
+            var dao = _mapper.Map<CreateAccountDAO>(dto);
+            dao.Roles.Add("User");
+            dao.Roles.Add("Admin");
+
+            AccountDAO? account = await _accountRepository.CreateAccount(dao);
+
+            // check if account with provided email already exists (created account is null)
+            if (account == null)
+            {
                 return BadRequest(new ResponseDTO
                 {
                     StatusCode = StatusCodes.Status400BadRequest,
                     Message = "Account with provided email already exists"
                 });
-
-            // create new account
-            Account account =
-                new Account
-                {
-                    UserName = dto.UserName,
-                    // hash password
-                    HashedPassword = dto.Password.Hash(),
-                    Email = dto.Email
-                };
-
-            // save account
-            _accountRepository.createAdminAccount(account);
-            return Created("success",
-            new ResponseDTO
+            }
+            else
             {
-                StatusCode = StatusCodes.Status201Created,
-                Message = "Account created"
-            });
+                return Created("success", new ResponseDTO
+                {
+                    StatusCode = StatusCodes.Status201Created,
+                    Message = "Account created"
+                });
+            }
         }
 
         /// <summary>
@@ -118,33 +104,27 @@ namespace _4kTiles_Backend.Controllers
         /// <param name="dto">Account information</param>
         /// <returns>User information</returns>
         [HttpPost("Login")]
-        public IActionResult Login(AccountLoginDTO dto)
+        public async Task<IActionResult> Login(AccountLoginDTO dto)
         {
             try
             {
-                string credentialErrorMessage = "Invalid credentials";
-
                 // check if account with provided email exists
-                Account account = _accountRepository.getAccountByEmail(dto.Email);
-
-                Role role = _accountRepository.getAccountRoleById(account.AccountId);
+                AccountDAO? account = await _accountRepository.Login(dto.Email, dto.Password);
 
                 // check if credentials are valid
-                if (
-                    account == null || !dto.Password.VerifyHash(account.HashedPassword)
-                )
+                if (account == null)
                     return BadRequest(new ResponseDTO
                     {
                         StatusCode = StatusCodes.Status400BadRequest,
-                        Message = credentialErrorMessage
+                        Message = "Invalid credentials"
                     });
 
                 // generate JWT token
-                string token =
-                    _jwtService
-                        .GenerateAccountToken(_configuration
-                            .GetValue<string>("Jwt:securityKey"),
-                        account.AccountId, role.RoleName);
+                string token = _jwtService.GenerateAccountToken(
+                    _configuration.GetValue<string>("Jwt:securityKey"), 
+                    account.AccountId,
+                    account.Roles
+                    );
 
                 Response.Cookies.Append("token", token);
 
@@ -152,8 +132,8 @@ namespace _4kTiles_Backend.Controllers
                 return Ok(new ResponseDTO
                 {
                     StatusCode = StatusCodes.Status200OK,
-                    Message = "Success",
-                    Data = new { Token = token }
+                    Message = "Success. The token is on Data",
+                    Data = token
                 });
             }
             catch (Exception ex)
@@ -173,52 +153,25 @@ namespace _4kTiles_Backend.Controllers
         /// <returns>Account information</returns>
         [HttpGet("Account")]
         [Authorize]
-        public IActionResult GetAccount()
+        public async Task<IActionResult> GetAccount()
         {
-            try
+            var badResponse = BadRequest(new ResponseDTO
             {
-                string token = Request.Cookies["token"];
-
-                // check if token is valid
-                JwtSecurityToken verifiedToken =
-                    _jwtService
-                        .VerifyToken(_configuration
-                            .GetValue<string>("Jwt:securityKey"),
-                        token);
-
-                // get account id from token
-                int accountId =
-                    int
-                        .Parse(verifiedToken
-                            .Claims
-                            .FirstOrDefault(claim => claim.Type == "accountId")
-                            .Value);
-
-                // get user information
-                Account account = _accountRepository.getAccountById(accountId);
-
-                // return user information
-                return Ok(new ResponseDTO
+                StatusCode = StatusCodes.Status400BadRequest,
+                Message = "Invalid token"
+            });
+            string? accountValueClaim = User.FindFirst("accountId")?.Value;
+            if (accountValueClaim is null) return badResponse;
+            if (!int.TryParse(accountValueClaim, out var accountId)) return badResponse;
+            AccountDAO? account = await _accountRepository.GetAccountById(accountId);
+            return account == null
+                ? badResponse
+                : Ok(new ResponseDTO
                 {
                     StatusCode = StatusCodes.Status200OK,
                     Message = "Success",
-                    Data =
-                        new
-                        {
-                            account.AccountId,
-                            account.UserName,
-                            account.Email
-                        }
+                    Data = _mapper.Map<AccountDTO>(account)
                 });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new ResponseDTO
-                {
-                    StatusCode = StatusCodes.Status400BadRequest,
-                    Message = "Invalid token" ?? ex.Message
-                });
-            }
         }
 
         /// <summary>

@@ -1,6 +1,10 @@
 using AutoMapper;
 using _4kTiles_Backend.Entities;
 using _4kTiles_Backend.Context;
+using _4kTiles_Backend.DataObjects.DAO.Account;
+using _4kTiles_Backend.Helpers;
+
+using Microsoft.EntityFrameworkCore;
 
 namespace _4kTiles_Backend.Services.Repositories
 {
@@ -9,15 +13,15 @@ namespace _4kTiles_Backend.Services.Repositories
     /// </summary>
     public interface IAccountRepository
     {
-        Account createUserAccount(Account account);
+        Task<AccountDAO?> Login(string email, string password);
 
-        Account createAdminAccount(Account account);
+        Task<AccountDAO?> CreateAccount(CreateAccountDAO createAccountDAO);
 
-        Account getAccountByEmail(string email);
+        Task<AccountDAO?> GetAccountByEmail(string email);
 
-        Account getAccountById(int id);
+        Task<AccountDAO?> GetAccountById(int id);
 
-        Role getAccountRoleById(int id);
+        Task<ICollection<string>> GetAccountRoleById(int id);
     }
 
     /// <summary>
@@ -43,65 +47,52 @@ namespace _4kTiles_Backend.Services.Repositories
         }
 
         /// <summary>
-        /// Create account
+        /// Get account from user credentials
         /// </summary>
-        /// <param name="account">Account information from user input</param>
-        /// <returns>new account</returns>
-        public Account createUserAccount(Account account)
+        /// <param name="email">the email</param>
+        /// <param name="password">the password</param>
+        /// <returns>the account</returns>
+        public async Task<AccountDAO?> Login(string email, string password)
         {
-            // add account to DbContext
-            _context.Accounts.Add(account);
-
-            // save changes to database
-            _context.SaveChanges();
-
-            // assign role to account
-            _context
-                .AccountRoles
-                .Add(new AccountRole
-                {
-                    AccountId = _context.Accounts.FirstOrDefault(a => a.Email == account.Email).AccountId,
-                    RoleId =
-                        _context
-                            .Roles
-                            .FirstOrDefault<Role>(r => r.RoleName == "User")
-                            .RoleId
-                });
-
-            // save changes to database
-            _context.SaveChanges();
-            return account;
+            Account? account = await _context.Accounts.FirstOrDefaultAsync(a => a.Email == email);
+            if (account == null || !password.VerifyHash(account.HashedPassword)) return null;
+            return await GetAccountByEmail(email);
         }
 
         /// <summary>
         /// Create account
         /// </summary>
-        /// <param name="account">Account information from user input</param>
+        /// <param name="createAccountDAO">Account information from user input</param>
         /// <returns>new account</returns>
-        public Account createAdminAccount(Account account)
+        public async Task<AccountDAO?> CreateAccount(CreateAccountDAO createAccountDAO)
         {
-            // add account to DbContext
+            // Check if email exists, return null
+            if (await GetAccountByEmail(createAccountDAO.Email) is not null) return null;
+
+            // Map & Add account
+            Account account = _mapper.Map<Account>(createAccountDAO);
             _context.Accounts.Add(account);
+            await _context.SaveChangesAsync();
 
-            // save changes to database
-            _context.SaveChanges();
-
-            // assign role to account
-            _context
-                .AccountRoles
-                .Add(new AccountRole
+            // Add roles
+            foreach (string role in createAccountDAO.Roles)
+            {
+                int roleId = await _context.Roles
+                    .Where(r => r.RoleName.ToLower().Equals(role.ToLower()))
+                    .Select(r => r.RoleId)
+                    .FirstOrDefaultAsync();
+                if (roleId <= 0) continue;
+                _context.AccountRoles.Add(new AccountRole
                 {
-                    AccountId = _context.Accounts.FirstOrDefault(a => a.Email == account.Email).AccountId,
-                    RoleId =
-                        _context
-                            .Roles
-                            .FirstOrDefault<Role>(r => r.RoleName == "Admin")
-                            .RoleId
+                    AccountId = account.AccountId,
+                    RoleId = roleId
                 });
+            }
 
-            // save changes to database
-            _context.SaveChanges();
-            return account;
+            await _context.SaveChangesAsync();
+
+            // Return account information
+            return await GetAccountById(account.AccountId);
         }
 
         /// <summary>
@@ -109,21 +100,42 @@ namespace _4kTiles_Backend.Services.Repositories
         /// </summary>
         /// <param name="email">email from user input</param>
         /// <returns>account with provided email</returns>
-        public Account getAccountByEmail(string email)
+        public async Task<AccountDAO?> GetAccountByEmail(string email)
         {
-            return _context.Accounts.FirstOrDefault(a => a.Email == email);
+            var account = await _context.Accounts
+                .Where(a => a.Email == email)
+                .Include(a => a.AccountRoles)
+                .ThenInclude(ar => ar.Role)
+                .FirstOrDefaultAsync();
+            if (account is null) return null;
+            AccountDAO accountDAO = _mapper.Map<AccountDAO>(account);
+            return accountDAO;
         }
 
-        public Account getAccountById(int id)
+        public async Task<AccountDAO?> GetAccountById(int id)
         {
-            return _context.Accounts.FirstOrDefault(a => a.AccountId == id);
+            var account = await _context.Accounts
+                .Where(a => a.AccountId == id)
+                .Include(a => a.AccountRoles)
+                .ThenInclude(ar => ar.Role)
+                .FirstOrDefaultAsync();
+            if (account is null) return null;
+            AccountDAO accountDAO = _mapper.Map<AccountDAO>(account);
+            return accountDAO;
         }
 
-        public Role getAccountRoleById(int id)
+        /// <summary>
+        /// Get roles from account id
+        /// </summary>
+        /// <param name="id">account id</param>
+        /// <returns>role names</returns>
+        public async Task<ICollection<string>> GetAccountRoleById(int id)
         {
-            AccountRole accountRole = _context.AccountRoles.FirstOrDefault(a => a.AccountId == id);
-
-            return _context.Roles.FirstOrDefault(r => r.RoleId == accountRole.RoleId);
+            return await _context.AccountRoles
+                .Where(ar => ar.AccountId == id)
+                .Include(ar => ar.Role)
+                .Select(ar => ar.Role.RoleName)
+                .ToListAsync();
         }
     }
 }

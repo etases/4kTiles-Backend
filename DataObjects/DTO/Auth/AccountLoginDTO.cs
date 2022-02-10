@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -7,7 +8,10 @@ namespace _4kTiles_Backend.DataObjects.DTO.Auth
 {
     public class AccountLoginDTO
     {
-        public string Email { get; set; }
-        public string Password { get; set; }
+        [Required]
+        public string Email { get; set; } = null!;
+
+        [Required]
+        public string Password { get; set; } = null!;
     }
 }
