@@ -21,6 +21,9 @@ namespace _4kTiles_Backend.Mappers
                 .ForMember(a => a.HashedPassword, o => o.MapFrom(dao => dao.Password.Hash()));
             CreateMap<AccountDAO, AccountDTO>();
             CreateMap<AccountRegisterDTO, CreateAccountDAO>();
+            CreateMap<AccountUpdateDTO, UpdateAccountDAO>();
+            CreateMap<UpdateAccountDAO, Account>()
+                .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
         }
     }
 }

@@ -24,6 +24,8 @@ namespace _4kTiles_Backend.Services.Repositories
         Task<ICollection<string>> GetAccountRoleById(int id);
 
         Task<bool> DeactivateAccount(int id, string message);
+
+        Task<int> UpdateAccount(UpdateAccountDAO updateAccountDAO);
     }
 
     /// <summary>
@@ -156,6 +158,20 @@ namespace _4kTiles_Backend.Services.Repositories
             _context.Accounts.Update(account);
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        /// <summary>
+        /// Update the account info
+        /// </summary>
+        /// <param name="updateAccountDAO">the dao</param>
+        /// <returns>-1 if the account id doesn't exist, otherwise return the row updated (0 or 1)</returns>
+        public async Task<int> UpdateAccount(UpdateAccountDAO updateAccountDAO)
+        {
+            var account = await _context.Accounts.FirstOrDefaultAsync(a => a.AccountId == updateAccountDAO.AccountId);
+            if (account is null) return -1;
+            _mapper.Map(updateAccountDAO, account);
+            _context.Accounts.Update(account);
+            return await _context.SaveChangesAsync();
         }
     }
 }

@@ -163,9 +163,32 @@ namespace _4kTiles_Backend.Controllers
             string? accountValueClaim = User.FindFirst("accountId")?.Value;
             if (accountValueClaim is null) return badResponse;
             if (!int.TryParse(accountValueClaim, out var accountId)) return badResponse;
-            AccountDAO? account = await _accountRepository.GetAccountById(accountId);
+            AccountDAO? account = await _accountRepository.GetAccountById(accountId, false);
             return account == null
                 ? badResponse
+                : Ok(new ResponseDTO
+                {
+                    StatusCode = StatusCodes.Status200OK,
+                    Message = "Success",
+                    Data = _mapper.Map<AccountDTO>(account)
+                });
+        }
+
+        /// <summary>
+        /// Get the account by the account id
+        /// </summary>
+        /// <param name="id">the account id</param>
+        /// <returns>the account</returns>
+        [HttpGet("Account/{id:int}")]
+        public async Task<IActionResult> GetAccount(int id)
+        {
+            AccountDAO? account = await _accountRepository.GetAccountById(id, false);
+            return account == null
+                ? BadRequest(new ResponseDTO
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    Message = "Invalid token"
+                })
                 : Ok(new ResponseDTO
                 {
                     StatusCode = StatusCodes.Status200OK,
@@ -219,6 +242,34 @@ namespace _4kTiles_Backend.Controllers
                 {
                     StatusCode = StatusCodes.Status400BadRequest,
                     Message = "Account doesn't exist"
+                });
+        }
+
+        /// <summary>
+        /// Update the account profile
+        /// </summary>
+        /// <param name="dto">the account update info</param>
+        /// <returns>The status response</returns>
+        [HttpPut]
+        [Authorize]
+        public async Task<IActionResult> UpdateAccount(AccountUpdateDTO dto)
+        {
+            var badResponse = BadRequest(new ResponseDTO
+            {
+                StatusCode = StatusCodes.Status400BadRequest,
+                Message = "Invalid token"
+            });
+            string? accountValueClaim = User.FindFirst("accountId")?.Value;
+            if (accountValueClaim is null) return badResponse;
+            if (!int.TryParse(accountValueClaim, out var accountId)) return badResponse;
+            var dao = _mapper.Map<UpdateAccountDAO>(dto);
+            dao.AccountId = accountId;
+            return await _accountRepository.UpdateAccount(dao) < 0
+                ? badResponse
+                : Ok(new ResponseDTO
+                {
+                    StatusCode = StatusCodes.Status200OK,
+                    Message = "Account updated"
                 });
         }
     }
