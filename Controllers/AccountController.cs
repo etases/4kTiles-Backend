@@ -1,11 +1,13 @@
 using _4kTiles_Backend.DataObjects.DAO.Account;
 using _4kTiles_Backend.DataObjects.DTO.Account;
+using _4kTiles_Backend.DataObjects.DTO.Email;
 using _4kTiles_Backend.Services.Repositories;
 using _4kTiles_Backend.DataObjects.DTO.Response;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using _4kTiles_Backend.Services.Auth;
+using _4kTiles_Backend.Services.Email;
 
 using AutoMapper;
 
@@ -19,18 +21,21 @@ namespace _4kTiles_Backend.Controllers
         private readonly IJwtService _jwtService;
         private readonly IConfiguration _configuration;
         private readonly IMapper _mapper;
+        private readonly IEmailService _mailService;
 
         public AccountController(
             IAccountRepository accountRepository,
             IJwtService jwtService,
             IConfiguration configuration,
-            IMapper mapper
+            IMapper mapper,
+            IEmailService mailService
         )
         {
             _accountRepository = accountRepository;
             _jwtService = jwtService;
             _configuration = configuration;
             _mapper = mapper;
+            _mailService = mailService;
         }
 
         /// <summary>
@@ -57,6 +62,11 @@ namespace _4kTiles_Backend.Controllers
             }
             else
             {
+                await _mailService.SendEmail(new EmailContent
+                {
+                    ToEmail = dto.Email,
+                    Value = "Your account is created. You can start your journey on our game with more fun than before."
+                });
                 return Created("success", new ResponseDTO 
                 {
                     StatusCode = StatusCodes.Status201Created,
@@ -90,6 +100,11 @@ namespace _4kTiles_Backend.Controllers
             }
             else
             {
+                await _mailService.SendEmail(new EmailContent
+                {
+                    ToEmail = dto.Email,
+                    Value = "Your account is created. You can manage other accounts and songs."
+                });
                 return Created("success", new ResponseDTO
                 {
                     StatusCode = StatusCodes.Status201Created,
@@ -238,9 +253,9 @@ namespace _4kTiles_Backend.Controllers
                     StatusCode = StatusCodes.Status200OK,
                     Message = "Account deactivated"
                 })
-                : BadRequest(new ResponseDTO
+                : NotFound(new ResponseDTO
                 {
-                    StatusCode = StatusCodes.Status400BadRequest,
+                    StatusCode = StatusCodes.Status404NotFound,
                     Message = "Account doesn't exist"
                 });
         }
@@ -271,6 +286,72 @@ namespace _4kTiles_Backend.Controllers
                     StatusCode = StatusCodes.Status200OK,
                     Message = "Account updated"
                 });
+        }
+
+        /// <summary>
+        /// Create a new reset code
+        /// </summary>
+        /// <param name="email">the account email</param>
+        /// <returns>the status response</returns>
+        [HttpPost("Reset/Create")]
+        public async Task<IActionResult> CreateNewResetCode(string email)
+        {
+            var account = await _accountRepository.GetAccountByEmail(email);
+            if (account == null) 
+                return NotFound(new ResponseDTO
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    Message = "Account doesn't exist"
+                });
+            
+            var resetCode = _accountRepository.CreateNewResetCode(account.AccountId);
+            await _mailService.SendEmail(new EmailContent
+            {
+                ToEmail = email,
+                Value = $"You have requested a new reset code for your account. The code is {resetCode}"
+            });
+            return Ok(new ResponseDTO
+            {
+                StatusCode = StatusCodes.Status200OK,
+                Message = "Reset code created"
+            });
+        }
+
+        /// <summary>
+        /// Reset the account
+        /// </summary>
+        /// <param name="dto">the account reset info</param>
+        /// <returns>the status response</returns>
+        [HttpPost("Reset")]
+        public async Task<IActionResult> ResetAccount(AccountResetDTO dto)
+        {
+            var account = await _accountRepository.GetAccountByEmail(dto.Email);
+            if (account == null)
+                return NotFound(new ResponseDTO
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    Message = "Account doesn't exist"
+                });
+
+            bool success = await _accountRepository.ResetAccount(account.AccountId, dto.ResetCode, dto.Password);
+            if (!success)
+                return BadRequest(new ResponseDTO
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    Message = "Failed to reset the account. Maybe the reset code is incorrect"
+                });
+            else
+            {
+                await _mailService.SendEmail(new EmailContent
+                {
+                    ToEmail = dto.Email, Value = "Your account password was reset."
+                });
+                return Ok(new ResponseDTO
+                {
+                    StatusCode = StatusCodes.Status200OK,
+                    Message = "Account reset"
+                });
+            }
         }
     }
 }

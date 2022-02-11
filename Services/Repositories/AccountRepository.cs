@@ -28,6 +28,10 @@ namespace _4kTiles_Backend.Services.Repositories
         Task<bool> DeactivateAccount(int id, string message);
 
         Task<int> UpdateAccount(UpdateAccountDAO updateAccountDAO);
+
+        string CreateNewResetCode(int accountId);
+
+        Task<bool> ResetAccount(int accountId, string resetCode, string newPassword);
     }
 
     /// <summary>
@@ -35,12 +39,10 @@ namespace _4kTiles_Backend.Services.Repositories
     /// </summary>
     public class AccountRepository : IAccountRepository
     {
-        // DbContext instance
         private readonly ApplicationDbContext _context;
-
-        // AutoMapper instance
         private readonly IMapper _mapper;
         private readonly IEmailService _mailService;
+        private readonly Dictionary<int, string> _resetCodes = new();
 
         /// <summary>
         /// Account repository constructor
@@ -98,11 +100,6 @@ namespace _4kTiles_Backend.Services.Repositories
             }
 
             await _context.SaveChangesAsync();
-            await _mailService.SendEmail(new EmailContent
-            {
-                ToEmail = createAccountDAO.Email,
-                Value = "Your account is created. You can start your journey on our game with more fun than before."
-            });
 
             // Return account information
             return await GetAccountById(account.AccountId);
@@ -160,7 +157,7 @@ namespace _4kTiles_Backend.Services.Repositories
         /// <returns>true if the account is deactivated successfully, false if the account doesn't exist</returns>
         public async Task<bool> DeactivateAccount(int id, string message)
         {
-            var account = await _context.Accounts.FirstOrDefaultAsync(a => a.AccountId == id);
+            var account = await _context.Accounts.FindAsync(id);
             if (account is null) return false;
             account.IsDeleted = true;
             account.DeletedReason = message;
@@ -176,11 +173,41 @@ namespace _4kTiles_Backend.Services.Repositories
         /// <returns>-1 if the account id doesn't exist, otherwise return the row updated (0 or 1)</returns>
         public async Task<int> UpdateAccount(UpdateAccountDAO updateAccountDAO)
         {
-            var account = await _context.Accounts.FirstOrDefaultAsync(a => a.AccountId == updateAccountDAO.AccountId);
+            var account = await _context.Accounts.FindAsync(updateAccountDAO.AccountId);
             if (account is null) return -1;
             _mapper.Map(updateAccountDAO, account);
             _context.Accounts.Update(account);
             return await _context.SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Create a new reset code for the account id
+        /// </summary>
+        /// <param name="accountId">the account id</param>
+        public string CreateNewResetCode(int accountId)
+        {
+            var resetCode = RandomHelper.RandomNumber(8);
+            _resetCodes.Add(accountId, resetCode);
+            return resetCode;
+        }
+
+        /// <summary>
+        /// Set the new password for the account
+        /// </summary>
+        /// <param name="accountId">the account id</param>
+        /// <param name="resetCode">the reset code</param>
+        /// <param name="newPassword">the new password</param>
+        /// <returns>true if successful, false if the reset code is incorrect</returns>
+        public async Task<bool> ResetAccount(int accountId, string resetCode, string newPassword)
+        {
+            string? actualResetCode = _resetCodes.GetValueOrDefault(accountId);
+            if (actualResetCode == null || !actualResetCode.Equals(resetCode)) return false;
+
+            var account = (await _context.Accounts.FindAsync(accountId))!;
+            account.HashedPassword = newPassword.Hash();
+            _context.Accounts.Update(account);
+            await _context.SaveChangesAsync();
+            return true;
         }
     }
 }
