@@ -65,7 +65,7 @@ namespace _4kTiles_Backend.Controllers
             return Ok(new ResponseDTO
             {
                 StatusCode = StatusCodes.Status200OK,
-                Message = "Get songs of " + accountSong[0].Author + " (id= " + User.Id + ")",
+                Message = "Get songs of " + accountSong[0].Author + " (id= " + UserId.Id + ")",
                 Data = accountSong
             });
         }

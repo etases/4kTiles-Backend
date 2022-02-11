@@ -1,4 +1,4 @@
-﻿namespace _4kTiles_Backend.DataObjects.DTO.Auth
+﻿namespace _4kTiles_Backend.DataObjects.DTO.Account
 {
     public class AccountDTO
     {

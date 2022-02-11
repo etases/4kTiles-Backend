@@ -86,7 +86,7 @@ namespace _4kTiles_Backend.Services.Repositories
                 {
                     if (tag != "")
                     {
-                        var add = TagFilter(tag);
+                        var add = await TagFilter(tag);
                         if (add != null)
                         {
                             list.AddRange(add);
