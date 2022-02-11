@@ -2,7 +2,9 @@ using AutoMapper;
 using _4kTiles_Backend.Entities;
 using _4kTiles_Backend.Context;
 using _4kTiles_Backend.DataObjects.DAO.Account;
+using _4kTiles_Backend.DataObjects.DTO.Email;
 using _4kTiles_Backend.Helpers;
+using _4kTiles_Backend.Services.Email;
 
 using Microsoft.EntityFrameworkCore;
 
@@ -38,16 +40,18 @@ namespace _4kTiles_Backend.Services.Repositories
 
         // AutoMapper instance
         private readonly IMapper _mapper;
+        private readonly IEmailService _mailService;
 
         /// <summary>
         /// Account repository constructor
         /// </summary>
         /// <param name="context">ApplicationDbContext</param>
         /// <param name="mapper">AutoMapper</param>
-        public AccountRepository(ApplicationDbContext context, IMapper mapper)
+        public AccountRepository(ApplicationDbContext context, IMapper mapper, IEmailService mailService)
         {
             _context = context;
             _mapper = mapper;
+            _mailService = mailService;
         }
 
         /// <summary>
@@ -94,6 +98,11 @@ namespace _4kTiles_Backend.Services.Repositories
             }
 
             await _context.SaveChangesAsync();
+            await _mailService.SendEmail(new EmailContent
+            {
+                ToEmail = createAccountDAO.Email,
+                Value = "Your account is created. You can start your journey on our game with more fun than before."
+            });
 
             // Return account information
             return await GetAccountById(account.AccountId);
