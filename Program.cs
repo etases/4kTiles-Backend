@@ -8,6 +8,8 @@ using Microsoft.OpenApi.Models;
 using System.Reflection;
 using System.Text;
 
+using _4kTiles_Backend.Services.Email;
+
 // --------------------------------------------------
 // create builder instance
 var builder = WebApplication.CreateBuilder(args);
@@ -72,6 +74,10 @@ builder.Services.AddDbContextPool<ApplicationDbContext>(options =>
 
 // Add AutoMapper to the services
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
+// Add Email service
+var emailConfig = builder.Configuration.GetSection("Email").Get<EmailConfig>();
+builder.Services.AddScoped<IEmailService>(sp => new EmailService(emailConfig, builder.Environment));
 
 // Add the repository to the services
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
