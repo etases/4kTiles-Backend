@@ -4,22 +4,19 @@ using _4kTiles_Backend.DataObjects.DTO;
 using _4kTiles_Backend.DataObjects.DTO.LibraryFilterDTO;
 using _4kTiles_Backend.Entities;
 
+using Microsoft.EntityFrameworkCore;
+
 namespace _4kTiles_Backend.Services.Repositories
 {
     public interface ILibraryRepository
     {
-        List<Song>? GetPublicSongs();
+        Task<List<Song>?> GetPublicSongs();
         Task<List<Song>?> GetPrivateSongs(int id);
-        List<Song>? GetSongByFilters(LibraryFilterDTO filter);
-        List<Song>? GetSongByGenre(string name);
+        Task<List<Song>?> GetSongByFilters(LibraryFilterDTO filter);
+        Task<List<Song>?> GetSongByGenre(string name);
 
 
     }
-
-
-
-
-
     public class LibraryRepository : ILibraryRepository
     {
         private readonly ApplicationDbContext _context;
@@ -31,14 +28,22 @@ namespace _4kTiles_Backend.Services.Repositories
         }
 
 
-
-        List<Song>? ILibraryRepository.GetPublicSongs()
+        /// <summary>
+        /// Get public songs
+        /// </summary>
+        /// <returns>List of public songs</returns>
+        public async Task<List<Song>?> GetPublicSongs()
         {
-            var publicSong = _context.Songs.Where(s => s.IsPublic == true).ToList();
+            var publicSong = await _context.Songs.Where(s => s.IsPublic == true).ToListAsync();
             return publicSong;
         }
 
-        async Task<List<Song>?> ILibraryRepository.GetPrivateSongs(int id)
+        /// <summary>
+        /// Get private songs of user
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns>List of private songs of user</returns>
+        public async Task<List<Song>?> GetPrivateSongs(int id)
         {
             var account = await _accountRepository.GetAccountById(id);
             if (account == null)
@@ -46,12 +51,17 @@ namespace _4kTiles_Backend.Services.Repositories
                 return null;
             }
             string name = account.UserName;
-            var accountSong = _context.Songs.Where(s => s.Author == name).ToList();
+            var accountSong = await _context.Songs.Where(s => s.Author == name).ToListAsync();
 
             return accountSong;
         }
 
-        List<Song>? ILibraryRepository.GetSongByFilters(LibraryFilterDTO filter)
+        /// <summary>
+        /// Search songs by Filters
+        /// </summary>
+        /// <param name="filter"></param>
+        /// <returns>List of public songs satisfied the Filter</returns>
+        public async Task<List<Song>?> GetSongByFilters(LibraryFilterDTO filter)
         {
             var songQ = _context.Songs.Where(s => s.IsPublic == true);
             if (filter.Name != "")
@@ -66,7 +76,7 @@ namespace _4kTiles_Backend.Services.Repositories
             }
             //song by author
 
-            var result = songQ.ToList();
+            var result =await songQ.ToListAsync();
 
             if (filter.Tag != "")
             {
@@ -76,7 +86,7 @@ namespace _4kTiles_Backend.Services.Repositories
                 {
                     if (tag != "")
                     {
-                        var add = TagFilter(tag);
+                        var add = await TagFilter(tag);
                         if (add != null)
                         {
                             list.AddRange(add);
@@ -91,46 +101,65 @@ namespace _4kTiles_Backend.Services.Repositories
             return result;
         }
 
-        private List<int>? TagFilter(string tagName)
+        /// <summary>
+        /// Get list song id satisfied the Tags
+        /// </summary>
+        /// <param name="tagName"></param>
+        /// <returns>List of song id</returns>
+        private async Task<List<int>?> TagFilter(string tagName)
         {
-            var tag = _context.Tags.Where(t => t.TagName.Trim().ToLower().Equals(tagName.Trim().ToLower())).FirstOrDefault();
+            var tag =await _context.Tags.Where(t => t.TagName.Trim().ToLower().Equals(tagName.Trim().ToLower())).FirstOrDefaultAsync();
             if (tag == null)
             {
                 return null;
             }
 
-            var songId = _context.SongTags.Where(s => s.TagId == tag.TagId).Select(s => s.SongId).ToList();
+            var songId =await _context.SongTags.Where(s => s.TagId == tag.TagId).Select(s => s.SongId).ToListAsync();
             return songId;
         }
 
-
-        public List<Song>? GetSongByGenre(string name)
+        /// <summary>
+        /// Get songs by Genre
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns>List of songs sastified the Genre</returns>
+        public async Task<List<Song>?> GetSongByGenre(string name)
         {
             List<int> list = new List<int>();
-            var add = (GenreFilter(name));
+            var add = GenreFilter(name);
             if (add != null)
             {
-                list.AddRange(add);
+                list.AddRange((IEnumerable<int>)add);
             }
             else
             {
                 return null;
             }
-            var result = _context.Songs.Where(s => s.IsPublic == true).ToList();
+            var result =await _context.Songs.Where(s => s.IsPublic == true).ToListAsync();
             result.RemoveAll(s => !list.Contains(s.SongId));
 
             return result;
         }
-        private List<int>? GenreFilter(string genreName)
+
+        /// <summary>
+        /// get list of song id sastisfied the Genre
+        /// </summary>
+        /// <param name="genreName"></param>
+        /// <returns>List of song id</returns>
+        private async Task<List<int>?> GenreFilter(string genreName)
         {
-            var genre = _context.Genres.Where(g => g.GenreName == genreName).FirstOrDefault();
-            var songByGenre = _context.SongGenres.Where(s => s.GenreId == genre.GenreId).Select(s => s.SongId).ToList();
+            var genre =await _context.Genres.Where(g => g.GenreName == genreName).FirstOrDefaultAsync();
+            if (genre == null)
+            {
+                return null;
+            }
+            var songByGenre =await _context.SongGenres.Where(s => s.GenreId == genre.GenreId).Select(s => s.SongId).ToListAsync();
             if (songByGenre == null)
             {
                 return null;
             }
 
-            var songId = _context.SongGenres.Where(s => s.GenreId == genre.GenreId).Select(s => s.SongId).ToList();
+            var songId =await _context.SongGenres.Where(s => s.GenreId == genre.GenreId).Select(s => s.SongId).ToListAsync();
             return songId;
         }
     }

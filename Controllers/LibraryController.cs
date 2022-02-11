@@ -27,11 +27,14 @@ namespace _4kTiles_Backend.Controllers
             _libraryService = libraryService;
         }
 
-        // GET: api/Library
+        /// <summary>
+        /// Get public songs
+        /// </summary>
+        /// <returns>List of public songs</returns>
         [HttpGet]
         public async Task<IActionResult> GetPublicSongs()
         {
-            var publicSong = _libraryService.GetPublicSongs();
+            var publicSong =await _libraryService.GetPublicSongs();
 
             return Ok(new ResponseDTO
             {
@@ -41,33 +44,41 @@ namespace _4kTiles_Backend.Controllers
             });
         }
 
-        // Post: api/Library
+        /// <summary>
+        /// Get private songs by user id (not use owner check)
+        /// </summary>
+        /// <param name="UserId"></param>
+        /// <returns>List of private songs of user</returns>
         [HttpPost]
-        public async Task<IActionResult> GetPrivateSongs([FromBody] LibraryUserIdDTO User)
+        public async Task<IActionResult> GetPrivateSongs([FromBody] LibraryUserIdDTO UserId)
         {
-            var accountSong = await _libraryService.GetPrivateSongs(User.Id);
+            var accountSong = await _libraryService.GetPrivateSongs(UserId.Id);
             if (accountSong == null)
             {
                 return BadRequest(new ResponseDTO
                 {
                     StatusCode = StatusCodes.Status400BadRequest,
-                    Message = "User Id is Invalid (id= " + User.Id + ")",
+                    Message = "User Id is Invalid (id= " + UserId.Id + ")",
                     Data = ""
                 });
             }
             return Ok(new ResponseDTO
             {
                 StatusCode = StatusCodes.Status200OK,
-                Message = "Get songs of " + accountSong[0].Author + " (id= " + User.Id + ")",
+                Message = "Get songs of " + accountSong[0].Author + " (id= " + UserId.Id + ")",
                 Data = accountSong
             });
         }
 
-        // Oost: api/Library/search
+        /// <summary>
+        /// Search songs by Filters
+        /// </summary>
+        /// <param name="Filter"></param>
+        /// <returns>List of public songs satisfied the Filter</returns>
         [HttpPost("search")]
         public async Task<IActionResult> GetSongByFilters([FromBody] LibraryFilterDTO Filter)
         {
-            var result = _libraryService.GetSongByFilters(Filter);
+            var result =await _libraryService.GetSongByFilters(Filter);
             if (result == null)
             {
                 return BadRequest(new ResponseDTO
@@ -84,11 +95,16 @@ namespace _4kTiles_Backend.Controllers
                 Data = result
             });
         }
-        // Oost: api/Library/genre
+
+        /// <summary>
+        /// Get songs by Genre
+        /// </summary>
+        /// <param name="Genre"></param>
+        /// <returns>List of songs sastified the Genre</returns>
         [HttpPost("genre")]
         public async Task<IActionResult> GetSongByGenre([FromBody] LibraryGenreDTO Genre)
         {
-            var result = _libraryService.GetSongByGenre(Genre.Name);
+            var result =await _libraryService.GetSongByGenre(Genre.Name);
             if (result == null)
             {
                 return BadRequest(new ResponseDTO
