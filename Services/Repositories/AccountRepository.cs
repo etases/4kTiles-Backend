@@ -202,8 +202,10 @@ namespace _4kTiles_Backend.Services.Repositories
         {
             string? actualResetCode = _resetCodes.GetValueOrDefault(accountId);
             if (actualResetCode == null || !actualResetCode.Equals(resetCode)) return false;
+            _resetCodes.Remove(accountId);
 
             var account = (await _context.Accounts.FindAsync(accountId))!;
+            if (newPassword.VerifyHash(account.HashedPassword)) return true;
             account.HashedPassword = newPassword.Hash();
             _context.Accounts.Update(account);
             await _context.SaveChangesAsync();
