@@ -1,6 +1,6 @@
 using _4kTiles_Backend.DataObjects.DAO.Account;
+using _4kTiles_Backend.DataObjects.DTO.Account;
 using _4kTiles_Backend.Services.Repositories;
-using _4kTiles_Backend.DataObjects.DTO.Auth;
 using _4kTiles_Backend.DataObjects.DTO.Response;
 
 using Microsoft.AspNetCore.Authorization;
