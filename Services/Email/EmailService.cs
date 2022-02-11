@@ -33,6 +33,8 @@ namespace _4kTiles_Backend.Services.Email
         /// <returns>the task</returns>
         public Task SendEmail(EmailContent content)
         {
+            if (!_emailConfig.Enabled) return Task.CompletedTask;
+
             // Make the final content
             var replacedContent = _contentTemplate
                 .Replace("[logo]", content.Logo)

@@ -2,6 +2,7 @@
 {
     public class EmailConfig
     {
+        public bool Enabled { get; set; } = true;
         public string SmtpServer { get; set; } = null!;
         public string MailAddress { get; set; } = null!;
         public string MailPassword { get; set; } = null!;
