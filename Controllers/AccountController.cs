@@ -175,19 +175,51 @@ namespace _4kTiles_Backend.Controllers
         }
 
         /// <summary>
-        /// Logout user
+        /// Deactivate the account from the token
         /// </summary>
-        /// <returns>Cleared cookie</returns>
-        [HttpPost("Logout")]
-        [Authorize]
-        public IActionResult Logout()
+        /// <returns>The status response</returns>
+        [HttpDelete]
+        [Authorize(Policy = "Creator")]
+        public async Task<IActionResult> DeactivateAccount()
         {
-            Response.Cookies.Delete("token");
-            return Ok(new ResponseDTO
+            var badResponse = BadRequest(new ResponseDTO
             {
-                StatusCode = StatusCodes.Status200OK,
-                Message = "Success"
+                StatusCode = StatusCodes.Status400BadRequest,
+                Message = "Invalid token"
             });
+            string? accountValueClaim = User.FindFirst("accountId")?.Value;
+            if (accountValueClaim is null) return badResponse;
+            if (!int.TryParse(accountValueClaim, out var accountId)) return badResponse;
+            return await _accountRepository.DeactivateAccount(accountId, "Self-Deletion")
+                ? Ok(new ResponseDTO
+                {
+                    StatusCode = StatusCodes.Status200OK,
+                    Message = "Account deactivated"
+                })
+                : badResponse;
+        }
+
+        /// <summary>
+        /// Deactivate the account based on the account id
+        /// </summary>
+        /// <param name="id">the account id</param>
+        /// <param name="message">the message</param>
+        /// <returns></returns>
+        [HttpDelete("Admin/{id:int}")]
+        [Authorize(Policy = "Manager")]
+        public async Task<IActionResult> DeactivateAccountAsManager(int id, string message)
+        {
+            return await _accountRepository.DeactivateAccount(id, message)
+                ? Ok(new ResponseDTO
+                {
+                    StatusCode = StatusCodes.Status200OK,
+                    Message = "Account deactivated"
+                })
+                : BadRequest(new ResponseDTO
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    Message = "Account doesn't exist"
+                });
         }
     }
 }

@@ -17,11 +17,13 @@ namespace _4kTiles_Backend.Services.Repositories
 
         Task<AccountDAO?> CreateAccount(CreateAccountDAO createAccountDAO);
 
-        Task<AccountDAO?> GetAccountByEmail(string email);
+        Task<AccountDAO?> GetAccountByEmail(string email, bool getDeleted = true);
 
-        Task<AccountDAO?> GetAccountById(int id);
+        Task<AccountDAO?> GetAccountById(int id, bool getDeleted = true);
 
         Task<ICollection<string>> GetAccountRoleById(int id);
+
+        Task<bool> DeactivateAccount(int id, string message);
     }
 
     /// <summary>
@@ -56,7 +58,7 @@ namespace _4kTiles_Backend.Services.Repositories
         {
             Account? account = await _context.Accounts.FirstOrDefaultAsync(a => a.Email == email);
             if (account == null || !password.VerifyHash(account.HashedPassword)) return null;
-            return await GetAccountByEmail(email);
+            return await GetAccountByEmail(email, false);
         }
 
         /// <summary>
@@ -99,26 +101,27 @@ namespace _4kTiles_Backend.Services.Repositories
         /// Find account by email
         /// </summary>
         /// <param name="email">email from user input</param>
+        /// <param name="getDeleted">whether we should get the deleted accounts</param>
         /// <returns>account with provided email</returns>
-        public async Task<AccountDAO?> GetAccountByEmail(string email)
+        public async Task<AccountDAO?> GetAccountByEmail(string email, bool getDeleted = true)
         {
             var account = await _context.Accounts
                 .Where(a => a.Email == email)
                 .Include(a => a.AccountRoles)
                 .ThenInclude(ar => ar.Role)
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(a => getDeleted || a.IsDeleted != true);
             if (account is null) return null;
             AccountDAO accountDAO = _mapper.Map<AccountDAO>(account);
             return accountDAO;
         }
 
-        public async Task<AccountDAO?> GetAccountById(int id)
+        public async Task<AccountDAO?> GetAccountById(int id, bool getDeleted = true)
         {
             var account = await _context.Accounts
                 .Where(a => a.AccountId == id)
                 .Include(a => a.AccountRoles)
                 .ThenInclude(ar => ar.Role)
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(a => getDeleted || a.IsDeleted != true);
             if (account is null) return null;
             AccountDAO accountDAO = _mapper.Map<AccountDAO>(account);
             return accountDAO;
@@ -136,6 +139,23 @@ namespace _4kTiles_Backend.Services.Repositories
                 .Include(ar => ar.Role)
                 .Select(ar => ar.Role.RoleName)
                 .ToListAsync();
+        }
+
+        /// <summary>
+        /// Deactivate the account
+        /// </summary>
+        /// <param name="id">the account id</param>
+        /// <param name="message">the deactivate message</param>
+        /// <returns>true if the account is deactivated successfully, false if the account doesn't exist</returns>
+        public async Task<bool> DeactivateAccount(int id, string message)
+        {
+            var account = await _context.Accounts.FirstOrDefaultAsync(a => a.AccountId == id);
+            if (account is null) return false;
+            account.IsDeleted = true;
+            account.DeletedReason = message;
+            _context.Accounts.Update(account);
+            await _context.SaveChangesAsync();
+            return true;
         }
     }
 }
