@@ -38,7 +38,11 @@ namespace _4kTiles_Backend.Controllers
             return Created("success", new ResponseDTO { StatusCode = StatusCodes.Status201Created, Message = "Song Created." });
 
         }
-
+        /// <summary>
+        /// Delete Song
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpDelete("Delete/{id:int}")]
         public async Task<ActionResult> DeactivateSong(int id)
         {
@@ -49,8 +53,12 @@ namespace _4kTiles_Backend.Controllers
             }
             return Ok(new ResponseDTO { StatusCode = StatusCodes.Status200OK, Message = "Song Deactivated." });
         }
-
-
+        /// <summary>
+        /// Update Song
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="song"></param>
+        /// <returns></returns>
         [HttpPut("Update/{id:int}")]
         public async Task<ActionResult> UpdateSong(int id, [FromBody] EditSongDTO song)
         {
