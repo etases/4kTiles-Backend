@@ -3,6 +3,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using _4kTiles_Backend.Context;
 using _4kTiles_Backend.Entities;
+using _4kTiles_Backend.Services.Repositories;
+using AutoMapper;
+using _4kTiles_Backend.DataObjects.DAO.Report;
+using _4kTiles_Backend.DataObjects.DTO.Response;
+using _4kTiles_Backend.DataObjects.DTO.Report;
 
 namespace _4kTiles_Backend.Controllers
 {
@@ -11,20 +16,21 @@ namespace _4kTiles_Backend.Controllers
     public class SongReportsController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly ISongReportRepository _songReportRepository;
+        private readonly IMapper _mapper;
 
-        public SongReportsController(ApplicationDbContext context)
+        public SongReportsController(ISongReportRepository songReportRepository, IMapper mapper)
         {
-            _context = context;
+            _songReportRepository = songReportRepository;
+            _mapper = mapper;
         }
 
-        // GET: api/SongReports
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<SongReport>>> GetSongReports()
+        public async Task<ActionResult<IEnumerable<SongReport>>> GetSongReportList()
         {
             return await _context.SongReports.ToListAsync();
         }
 
-        // GET: api/SongReports/5
         [HttpGet("{id}")]
         public async Task<ActionResult<SongReport>> GetSongReport(int id)
         {
@@ -38,39 +44,22 @@ namespace _4kTiles_Backend.Controllers
             return songReport;
         }
 
-        // PUT: api/SongReports/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutSongReport(int id, SongReport songReport)
+        /// <summary>
+        /// Create new Report
+        /// </summary>
+        /// <param name="report">song DTO</param>
+        /// <returns>Success message</returns>
+        [HttpPost("Create")]
+        public async Task<ActionResult> CreateReport([FromBody] CreateReportDTO report)
         {
-            if (id != songReport.ReportId)
-            {
-                return BadRequest();
-            }
+            //Mapping data from source ofject to new obj.
+            CreateReportDAO reportDAO = _mapper.Map<CreateReportDAO>(report);
+            int result = await _songReportRepository.CreateReport(reportDAO);
 
-            _context.Entry(songReport).State = EntityState.Modified;
+            return Created("success", new ResponseDTO { StatusCode = StatusCodes.Status201Created, Message = "Report Created." });
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!SongReportExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
         }
 
-        // POST: api/SongReports
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<SongReport>> PostSongReport(SongReport songReport)
         {
@@ -78,27 +67,6 @@ namespace _4kTiles_Backend.Controllers
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetSongReport", new { id = songReport.ReportId }, songReport);
-        }
-
-        // DELETE: api/SongReports/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteSongReport(int id)
-        {
-            var songReport = await _context.SongReports.FindAsync(id);
-            if (songReport == null)
-            {
-                return NotFound();
-            }
-
-            _context.SongReports.Remove(songReport);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
-        }
-
-        private bool SongReportExists(int id)
-        {
-            return _context.SongReports.Any(e => e.ReportId == id);
         }
     }
 }
