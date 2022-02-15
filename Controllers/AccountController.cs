@@ -309,7 +309,7 @@ namespace _4kTiles_Backend.Controllers
             if (account == null) 
                 return NotFound(new ResponseDTO
                 {
-                    StatusCode = StatusCodes.Status400BadRequest,
+                    StatusCode = StatusCodes.Status404NotFound,
                     IsError = true,
                     Message = "Account doesn't exist"
                 });
@@ -320,9 +320,9 @@ namespace _4kTiles_Backend.Controllers
                 ToEmail = email,
                 Value = $"You have requested a new reset code for your account. The code is {resetCode}"
             });
-            return Ok(new ResponseDTO
+            return Created(nameof(ResetAccount), new ResponseDTO
             {
-                StatusCode = StatusCodes.Status200OK,
+                StatusCode = StatusCodes.Status201Created,
                 Message = "Reset code created"
             });
         }
@@ -339,7 +339,7 @@ namespace _4kTiles_Backend.Controllers
             if (account == null)
                 return NotFound(new ResponseDTO
                 {
-                    StatusCode = StatusCodes.Status400BadRequest,
+                    StatusCode = StatusCodes.Status404NotFound,
                     ErrorCode = -1,
                     Message = "Account doesn't exist"
                 });
