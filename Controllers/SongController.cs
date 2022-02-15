@@ -29,7 +29,7 @@ namespace _4kTiles_Backend.Controllers
         /// <param name="song">song DTO</param>
         /// <returns>Success message</returns>
         [HttpPost("Create")]
-        public async Task<ActionResult> CreateNewSong([FromBody] SongDTO song)
+        public async Task<ActionResult<ResponseDTO>> CreateNewSong([FromBody] SongDTO song)
         {
             //Mapping data from source ofject to new obj.
             CreateSongDAO songDAO = _mapper.Map<CreateSongDAO>(song);
@@ -40,19 +40,19 @@ namespace _4kTiles_Backend.Controllers
         }
 
         [HttpDelete("Delete/{id:int}")]
-        public async Task<ActionResult> DeactivateSong(int id)
+        public async Task<ActionResult<ResponseDTO>> DeactivateSong(int id)
         {
             int result = await _songRepository.DeactivateSong(id);
             if (result == -1)
             {
-                return NotFound(new ResponseDTO { StatusCode = StatusCodes.Status404NotFound, Message = "Song not exist!" });
+                return NotFound(new ResponseDTO { StatusCode = StatusCodes.Status404NotFound, IsError = true, Message = "Song not exist!" });
             }
             return Ok(new ResponseDTO { StatusCode = StatusCodes.Status200OK, Message = "Song Deactivated." });
         }
 
 
         [HttpPut("Update/{id:int}")]
-        public async Task<ActionResult> UpdateSong(int id, [FromBody] EditSongDTO song)
+        public async Task<ActionResult<ResponseDTO>> UpdateSong(int id, [FromBody] EditSongDTO song)
         {
 
             EditSongDAO editSongDAO = _mapper.Map<EditSongDAO>(song);
@@ -60,7 +60,7 @@ namespace _4kTiles_Backend.Controllers
 
             if (existedSong == -1)
             {
-                return NotFound(new ResponseDTO { StatusCode = StatusCodes.Status404NotFound, Message = "Song not found" });
+                return NotFound(new ResponseDTO { StatusCode = StatusCodes.Status404NotFound, IsError = true, Message = "Song not found" });
             }
             return Ok(new ResponseDTO { StatusCode = StatusCodes.Status200OK, Message = "Song Updated" });
 

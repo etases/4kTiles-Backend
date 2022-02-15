@@ -44,7 +44,7 @@ namespace _4kTiles_Backend.Controllers
         /// <param name="dto">Account information</param>
         /// <returns></returns>
         [HttpPost("RegisterUser")]
-        public async Task<IActionResult> RegisterUser(AccountRegisterDTO dto)
+        public async Task<ActionResult<ResponseDTO>> RegisterUser(AccountRegisterDTO dto)
         {
             var dao = _mapper.Map<CreateAccountDAO>(dto);
             dao.Roles.Add("User");
@@ -57,6 +57,7 @@ namespace _4kTiles_Backend.Controllers
                 return BadRequest(new ResponseDTO
                 {
                     StatusCode = StatusCodes.Status400BadRequest,
+                    IsError = true,
                     Message = "Account with provided email already exists"
                 });
             }
@@ -81,7 +82,7 @@ namespace _4kTiles_Backend.Controllers
         /// <param name="dto">Account information</param>
         /// <returns></returns>
         [HttpPost("RegisterAdmin")]
-        public async Task<IActionResult> RegisterAdmin(AccountRegisterDTO dto)
+        public async Task<ActionResult<ResponseDTO>> RegisterAdmin(AccountRegisterDTO dto)
         {
             var dao = _mapper.Map<CreateAccountDAO>(dto);
             dao.Roles.Add("User");
@@ -95,6 +96,7 @@ namespace _4kTiles_Backend.Controllers
                 return BadRequest(new ResponseDTO
                 {
                     StatusCode = StatusCodes.Status400BadRequest,
+                    IsError = true,
                     Message = "Account with provided email already exists"
                 });
             }
@@ -119,7 +121,7 @@ namespace _4kTiles_Backend.Controllers
         /// <param name="dto">Account information</param>
         /// <returns>User information</returns>
         [HttpPost("Login")]
-        public async Task<IActionResult> Login(AccountLoginDTO dto)
+        public async Task<ActionResult<ResponseDTO<string>>> Login(AccountLoginDTO dto)
         {
             try
             {
@@ -131,6 +133,7 @@ namespace _4kTiles_Backend.Controllers
                     return BadRequest(new ResponseDTO
                     {
                         StatusCode = StatusCodes.Status400BadRequest,
+                        ErrorCode = 1,
                         Message = "Invalid credentials"
                     });
 
@@ -144,7 +147,7 @@ namespace _4kTiles_Backend.Controllers
                 Response.Cookies.Append("token", token);
 
                 // return user information
-                return Ok(new ResponseDTO
+                return Ok(new ResponseDTO<string>
                 {
                     StatusCode = StatusCodes.Status200OK,
                     Message = "Success. The token is on Data",
@@ -156,6 +159,7 @@ namespace _4kTiles_Backend.Controllers
                 return BadRequest(new ResponseDTO
                 {
                     StatusCode = StatusCodes.Status400BadRequest,
+                    ErrorCode = -1,
                     Message = ex.Message,
                     Data = ex.StackTrace,
                 });
@@ -168,11 +172,12 @@ namespace _4kTiles_Backend.Controllers
         /// <returns>Account information</returns>
         [HttpGet("Account")]
         [Authorize]
-        public async Task<IActionResult> GetAccount()
+        public async Task<ActionResult<ResponseDTO<AccountDTO>>> GetAccount()
         {
             var badResponse = BadRequest(new ResponseDTO
             {
                 StatusCode = StatusCodes.Status400BadRequest,
+                IsError = true,
                 Message = "Invalid token"
             });
             string? accountValueClaim = User.FindFirst("accountId")?.Value;
@@ -181,7 +186,7 @@ namespace _4kTiles_Backend.Controllers
             AccountDAO? account = await _accountRepository.GetAccountById(accountId, false);
             return account == null
                 ? badResponse
-                : Ok(new ResponseDTO
+                : Ok(new ResponseDTO<AccountDTO>
                 {
                     StatusCode = StatusCodes.Status200OK,
                     Message = "Success",
@@ -195,16 +200,17 @@ namespace _4kTiles_Backend.Controllers
         /// <param name="id">the account id</param>
         /// <returns>the account</returns>
         [HttpGet("Account/{id:int}")]
-        public async Task<IActionResult> GetAccount(int id)
+        public async Task<ActionResult<ResponseDTO<AccountDTO>>> GetAccount(int id)
         {
             AccountDAO? account = await _accountRepository.GetAccountById(id, false);
             return account == null
                 ? BadRequest(new ResponseDTO
                 {
                     StatusCode = StatusCodes.Status400BadRequest,
+                    IsError = true,
                     Message = "Invalid token"
                 })
-                : Ok(new ResponseDTO
+                : Ok(new ResponseDTO<AccountDTO>
                 {
                     StatusCode = StatusCodes.Status200OK,
                     Message = "Success",
@@ -218,11 +224,12 @@ namespace _4kTiles_Backend.Controllers
         /// <returns>The status response</returns>
         [HttpDelete]
         [Authorize(Policy = "Creator")]
-        public async Task<IActionResult> DeactivateAccount()
+        public async Task<ActionResult<ResponseDTO>> DeactivateAccount()
         {
             var badResponse = BadRequest(new ResponseDTO
             {
                 StatusCode = StatusCodes.Status400BadRequest,
+                IsError = true,
                 Message = "Invalid token"
             });
             string? accountValueClaim = User.FindFirst("accountId")?.Value;
@@ -245,7 +252,7 @@ namespace _4kTiles_Backend.Controllers
         /// <returns></returns>
         [HttpDelete("Admin/{id:int}")]
         [Authorize(Policy = "Manager")]
-        public async Task<IActionResult> DeactivateAccountAsManager(int id, string message)
+        public async Task<ActionResult<ResponseDTO>> DeactivateAccountAsManager(int id, string message)
         {
             return await _accountRepository.DeactivateAccount(id, message)
                 ? Ok(new ResponseDTO
@@ -256,6 +263,7 @@ namespace _4kTiles_Backend.Controllers
                 : NotFound(new ResponseDTO
                 {
                     StatusCode = StatusCodes.Status404NotFound,
+                    IsError = true,
                     Message = "Account doesn't exist"
                 });
         }
@@ -267,11 +275,12 @@ namespace _4kTiles_Backend.Controllers
         /// <returns>The status response</returns>
         [HttpPut]
         [Authorize]
-        public async Task<IActionResult> UpdateAccount(AccountUpdateDTO dto)
+        public async Task<ActionResult<ResponseDTO>> UpdateAccount(AccountUpdateDTO dto)
         {
             var badResponse = BadRequest(new ResponseDTO
             {
                 StatusCode = StatusCodes.Status400BadRequest,
+                IsError = true,
                 Message = "Invalid token"
             });
             string? accountValueClaim = User.FindFirst("accountId")?.Value;
@@ -294,13 +303,14 @@ namespace _4kTiles_Backend.Controllers
         /// <param name="email">the account email</param>
         /// <returns>the status response</returns>
         [HttpPost("Reset/Create")]
-        public async Task<IActionResult> CreateNewResetCode(string email)
+        public async Task<ActionResult<ResponseDTO>> CreateNewResetCode(string email)
         {
             var account = await _accountRepository.GetAccountByEmail(email);
             if (account == null) 
                 return NotFound(new ResponseDTO
                 {
                     StatusCode = StatusCodes.Status400BadRequest,
+                    IsError = true,
                     Message = "Account doesn't exist"
                 });
             
@@ -323,13 +333,14 @@ namespace _4kTiles_Backend.Controllers
         /// <param name="dto">the account reset info</param>
         /// <returns>the status response</returns>
         [HttpPost("Reset")]
-        public async Task<IActionResult> ResetAccount(AccountResetDTO dto)
+        public async Task<ActionResult<ResponseDTO>> ResetAccount(AccountResetDTO dto)
         {
             var account = await _accountRepository.GetAccountByEmail(dto.Email);
             if (account == null)
                 return NotFound(new ResponseDTO
                 {
                     StatusCode = StatusCodes.Status400BadRequest,
+                    ErrorCode = -1,
                     Message = "Account doesn't exist"
                 });
 
@@ -338,6 +349,7 @@ namespace _4kTiles_Backend.Controllers
                 return BadRequest(new ResponseDTO
                 {
                     StatusCode = StatusCodes.Status400BadRequest,
+                    ErrorCode = 1,
                     Message = "Failed to reset the account. Maybe the reset code is incorrect"
                 });
             else

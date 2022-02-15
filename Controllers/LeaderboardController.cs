@@ -19,31 +19,23 @@ namespace _4kTiles_Backend.Controllers
         }
 
         [HttpGet("Song/{songId}/{limit?}")]
-        public IActionResult GetLeaderboardBySongId(int songId, int limit = 10)
+        public List<LeaderboardAccountDTO> GetLeaderboardBySongId(int songId, int limit = 10)
         {
-            List<LeaderboardAccountDTO> leaderboard =
-                _leaderboardRepository
-                    .GetTopNLeaderboardBySongId(songId, limit);
-            return Ok(leaderboard);
+            return _leaderboardRepository.GetTopNLeaderboardBySongId(songId, limit);
         }
 
         [HttpGet("Account/{accountId}")]
-        public IActionResult GetLeaderboardByUserId(int accountId)
+        public List<LeaderboardUserDTO> GetLeaderboardByUserId(int accountId)
         {
-            List<LeaderboardUserDTO> leaderboard =
-                _leaderboardRepository.GetTopOneByUserId(accountId);
-            return Ok(leaderboard);
+            return _leaderboardRepository.GetTopOneByUserId(accountId);
         }
 
         [HttpPut]
         [Authorize]
-        public IActionResult
-        AddUserBestScore(int accountId, int songId, int score)
+        public ActionResult<ResponseDTO<AccountSong>> AddUserBestScore(int accountId, int songId, int score)
         {
-            AccountSong accountSong =
-                _leaderboardRepository
-                    .AddUserBestScore(accountId, songId, score);
-            return Ok(new ResponseDTO
+            AccountSong accountSong = _leaderboardRepository.AddUserBestScore(accountId, songId, score);
+            return Ok(new ResponseDTO<AccountSong>
             {
                 StatusCode = StatusCodes.Status200OK,
                 Message = "Successfully added user best score",
