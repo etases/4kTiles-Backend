@@ -19,5 +19,5 @@ namespace _4kTiles_Backend.DataObjects.DTO.Response
         }
     }
 
-    public record DynamicResponseDTO : ResponseDTO<dynamic> {}
+    public record ResponseDTO : ResponseDTO<dynamic> {}
 }
