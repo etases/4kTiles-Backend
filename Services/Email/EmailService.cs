@@ -12,18 +12,25 @@ namespace _4kTiles_Backend.Services.Email
     {
         private readonly string _contentTemplate;
         private readonly EmailConfig _emailConfig;
+        private readonly SmtpClient _smtpClient;
 
         public EmailService(EmailConfig emailConfig, IWebHostEnvironment env)
         {
             this._emailConfig = emailConfig;
 
             // Read mail template
-            var filePath = env.WebRootPath + "/Templates/MailTemplate.html";
+            var filePath = env.ContentRootPath + "/Templates/MailTemplate.html";
             var str = new StreamReader(filePath);
             var mailTemplate = str.ReadToEnd();
             str.Close();
 
             _contentTemplate = mailTemplate;
+            _smtpClient = new SmtpClient(_emailConfig.SmtpServer)
+            {
+                Port = _emailConfig.MailPort,
+                Credentials = new System.Net.NetworkCredential(_emailConfig.MailAddress, _emailConfig.MailPassword),
+                EnableSsl = true
+            };
         }
 
         /// <summary>
@@ -57,12 +64,6 @@ namespace _4kTiles_Backend.Services.Email
 
             // Mail service config
             var mail = new MailMessage();
-            var smtpClient = new SmtpClient(_emailConfig.SmtpServer)
-            {
-                Port = _emailConfig.MailPort,
-                Credentials = new System.Net.NetworkCredential(_emailConfig.MailAddress, _emailConfig.MailPassword),
-                EnableSsl = true
-            };
 
             // Mail content config
             mail.From = new MailAddress(_emailConfig.MailAddress, _emailConfig.DisplayName);
@@ -72,7 +73,7 @@ namespace _4kTiles_Backend.Services.Email
             mail.Body = replacedContent;
 
             // Send the mail
-            return smtpClient.SendMailAsync(mail);
+            return _smtpClient.SendMailAsync(mail);
         }
     }
 }

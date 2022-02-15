@@ -80,7 +80,7 @@ builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 // Add Email service
 var emailConfig = builder.Configuration.GetSection("Email").Get<EmailConfig>();
-builder.Services.AddScoped<IEmailService>(sp => new EmailService(emailConfig, builder.Environment));
+builder.Services.AddSingleton<IEmailService>(sp => new EmailService(emailConfig, builder.Environment));
 
 // Add the repository to the services
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
