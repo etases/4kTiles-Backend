@@ -18,7 +18,7 @@ namespace _4kTiles_Backend.Services.Email
             this._emailConfig = emailConfig;
 
             // Read mail template
-            var filePath = env.WebRootPath + "/Templates/MailTemplate.html";
+            var filePath = env.ContentRootPath + "/Templates/MailTemplate.html";
             var str = new StreamReader(filePath);
             var mailTemplate = str.ReadToEnd();
             str.Close();

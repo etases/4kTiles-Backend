@@ -4,7 +4,6 @@ using _4kTiles_Backend.Context;
 using _4kTiles_Backend.DataObjects.DAO.Account;
 using _4kTiles_Backend.DataObjects.DTO.Email;
 using _4kTiles_Backend.Helpers;
-using _4kTiles_Backend.Services.Email;
 
 using Microsoft.EntityFrameworkCore;
 
@@ -39,21 +38,19 @@ namespace _4kTiles_Backend.Services.Repositories
     /// </summary>
     public class AccountRepository : IAccountRepository
     {
+        private static readonly Dictionary<int, string> ResetCodes = new();
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
-        private readonly IEmailService _mailService;
-        private readonly Dictionary<int, string> _resetCodes = new();
 
         /// <summary>
         /// Account repository constructor
         /// </summary>
         /// <param name="context">ApplicationDbContext</param>
         /// <param name="mapper">AutoMapper</param>
-        public AccountRepository(ApplicationDbContext context, IMapper mapper, IEmailService mailService)
+        public AccountRepository(ApplicationDbContext context, IMapper mapper)
         {
             _context = context;
             _mapper = mapper;
-            _mailService = mailService;
         }
 
         /// <summary>
@@ -187,7 +184,7 @@ namespace _4kTiles_Backend.Services.Repositories
         public string CreateNewResetCode(int accountId)
         {
             var resetCode = RandomHelper.RandomNumber(8);
-            _resetCodes.Add(accountId, resetCode);
+            ResetCodes.Add(accountId, resetCode);
             return resetCode;
         }
 
@@ -200,9 +197,9 @@ namespace _4kTiles_Backend.Services.Repositories
         /// <returns>true if successful, false if the reset code is incorrect</returns>
         public async Task<bool> ResetAccount(int accountId, string resetCode, string newPassword)
         {
-            string? actualResetCode = _resetCodes.GetValueOrDefault(accountId);
+            string? actualResetCode = ResetCodes.GetValueOrDefault(accountId);
             if (actualResetCode == null || !actualResetCode.Equals(resetCode)) return false;
-            _resetCodes.Remove(accountId);
+            ResetCodes.Remove(accountId);
 
             var account = (await _context.Accounts.FindAsync(accountId))!;
             if (newPassword.VerifyHash(account.HashedPassword)) return true;
