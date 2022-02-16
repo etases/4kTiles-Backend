@@ -50,13 +50,33 @@ namespace _4kTiles_Backend.Controllers
         /// <param name="report">song DTO</param>
         /// <returns>Success message</returns>
         [HttpPost("Create")]
-        public async Task<ActionResult> CreateReport([FromBody] CreateReportDTO report)
+        public IActionResult CreateReport(CreateReportDAO report)
         {
-            //Mapping data from source ofject to new obj.
-            CreateReportDAO reportDAO = _mapper.Map<CreateReportDAO>(report);
-            int result = await _songReportRepository.CreateReport(reportDAO);
+            // check if Report already exists
+            if (_songReportRepository.GetReportByID(report.ReportId) != null)
+                return BadRequest(new ResponseDTO
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    Message = "This Report already exists"
+                });
 
-            return Created("success", new ResponseDTO { StatusCode = StatusCodes.Status201Created, Message = "Report Created." });
+            // create new Report
+            SongReport songReport = new SongReport
+            {
+                 ReportId = report.ReportId,
+                 ReportTitle = report.ReportTitle,
+                 ReportReason = report.ReportReason,
+                 SongId = report.SongId,
+                 ReportDate = report.ReportDate,
+            };
+
+            // save
+            _songReportRepository.CreateReport(report);
+            return Created("success", new ResponseDTO
+            {
+                StatusCode = StatusCodes.Status201Created,
+                Message = "Report created"
+            });
 
         }
 
@@ -65,7 +85,6 @@ namespace _4kTiles_Backend.Controllers
         {
             _context.SongReports.Add(songReport);
             await _context.SaveChangesAsync();
-
             return CreatedAtAction("GetSongReport", new { id = songReport.ReportId }, songReport);
         }
     }

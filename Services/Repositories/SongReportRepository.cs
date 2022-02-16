@@ -17,8 +17,8 @@ namespace _4kTiles_Backend.Services.Repositories
     {
         Task<SongReport?> GetReportByID(int id);
         Task<int> CreateReport(CreateReportDAO reportDAO);
-        Task<int> AdminEditTag(int id, SongReport report);
-        bool SongReportExists(int id);
+        Task<int> AcceptReport(int id, SongReport report);
+        Task<int> RejectReport(int id, SongReport report);
     }
 
     public class SongReportRepository : ISongReportRepository
@@ -32,6 +32,7 @@ namespace _4kTiles_Backend.Services.Repositories
         /// </summary>
         /// <param name="dbContext">App db context</param>
         /// <param name="mapper">mapper</param>
+        /// <param name="accountRepository"></param>
         public SongReportRepository(ApplicationDbContext dbContext, IMapper mapper, IAccountRepository accountRepository)
         {
             _dbContext = dbContext;
@@ -51,11 +52,11 @@ namespace _4kTiles_Backend.Services.Repositories
             int rowInsert = 0;
             _dbContext.SongReports.Add(newReport);
             rowInsert = await _dbContext.SaveChangesAsync();
-            return rowInsert;
+            return rowInsert;           
 
         }
 
-        public async Task<int> AdminEditTag(int id, SongReport report)
+        public async Task<int> AcceptReport(int id, SongReport report)
         {
             var getReport = await _dbContext.SongReports.Where(s => s.ReportId == id).FirstOrDefaultAsync();
             var tagUpdate = 0;
@@ -78,9 +79,28 @@ namespace _4kTiles_Backend.Services.Repositories
             return tagUpdate;
         }
 
-        public bool SongReportExists(int id)
+        public async Task<int> RejectReport(int id, SongReport report)
         {
-            return _dbContext.SongReports.Any(e => e.ReportId == id);
+            var getReport = await _dbContext.SongReports.Where(s => s.ReportId == id).FirstOrDefaultAsync();
+            var tagUpdate = 0;
+            try
+            {
+                if (getReport != null)
+                {
+                    getReport.ReportStatus = report.ReportStatus;
+                    tagUpdate = await _dbContext.SaveChangesAsync();
+                }
+                else
+                {
+                    getReport.ReportStatus = report.ReportStatus;
+                    tagUpdate = await _dbContext.Remove(report);
+                }
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message);
+            }
+            return tagUpdate;
         }
     }
 }
