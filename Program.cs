@@ -88,6 +88,7 @@ builder.Services.AddScoped<ILibraryRepository, LibraryRepository>();
 builder.Services.AddScoped<ILeaderboardRepository, LeaderboardRepository>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<ISongRepository, SongRepository>();
+builder.Services.AddScoped<ISongReportRepository, SongReportRepository>();
 
 // Add authentication to the services
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
