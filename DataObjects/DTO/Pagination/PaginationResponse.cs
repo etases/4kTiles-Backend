@@ -8,5 +8,5 @@ namespace _4kTiles_Backend.DataObjects.DTO.Pagination;
 public record PaginationResponse<T>
 {
     public int TotalRecords { get; set; } = 0;
-    public T? Payload { get; set; }
+    public IEnumerable<T> Payload { get; set; } = new List<T>();
 }

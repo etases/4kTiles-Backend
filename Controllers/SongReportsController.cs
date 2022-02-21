@@ -6,6 +6,7 @@ using _4kTiles_Backend.Entities;
 using _4kTiles_Backend.Services.Repositories;
 using AutoMapper;
 using _4kTiles_Backend.DataObjects.DAO.Report;
+using _4kTiles_Backend.DataObjects.DTO.Pagination;
 using _4kTiles_Backend.DataObjects.DTO.Response;
 using _4kTiles_Backend.DataObjects.DTO.Report;
 
@@ -32,12 +33,19 @@ namespace _4kTiles_Backend.Controllers
         /// Get Song Report List
         /// </summary>
         /// <param name="reportFilter">ReportFilter</param>
+        /// <param name="pagination"></param>
         /// <returns></returns>
         [HttpGet]
-        public async Task<IEnumerable<SongReportDTO>> GetSongReportList(ReportFilter reportFilter)
+        public async Task<PaginationResponseDTO<SongReportDTO>> GetSongReportList(ReportFilter reportFilter, [FromQuery] PaginationParameter pagination)
         {
-            var reportList = await _songReportRepository.GetListReport(reportFilter);
-            return _mapper.Map<List<SongReportDTO>>(reportList);
+            var reportList = await _songReportRepository.GetListReport(reportFilter, pagination);
+            return new PaginationResponseDTO<SongReportDTO>
+            {
+                StatusCode = StatusCodes.Status200OK,
+                Message = "Get song report list",
+                TotalRecords = reportList.TotalRecords,
+                Data = _mapper.Map<IEnumerable<SongReportDTO>>(reportList.Payload)
+            };
         }
 
         /// <summary>

@@ -1,17 +1,16 @@
 using System.Linq;
 using _4kTiles_Backend.Context;
 using _4kTiles_Backend.DataObjects.DTO.LeaderboardDTO;
+using _4kTiles_Backend.DataObjects.DTO.Pagination;
 using _4kTiles_Backend.Entities;
+using _4kTiles_Backend.Helpers;
 
 namespace _4kTiles_Backend.Services.Repositories
 {
     public interface ILeaderboardRepository
     {
-        List<LeaderboardAccountDTO>
-        GetTopNLeaderboardBySongId(int songId, int n);
-
-        List<LeaderboardUserDTO> GetTopOneByUserId(int accountId);
-
+        PaginationResponse<LeaderboardAccountDTO> GetTopLeaderboardBySongId(int songId, PaginationParameter pagination);
+        PaginationResponse<LeaderboardUserDTO> GetTopOneByUserId(int accountId, PaginationParameter pagination);
         AccountSong AddUserBestScore(int accountId, int songId, int score);
     }
 
@@ -51,76 +50,75 @@ namespace _4kTiles_Backend.Services.Repositories
             return accountSong;
         }
 
-        public List<LeaderboardAccountDTO>
-        GetTopNLeaderboardBySongId(int songId, int n)
+        public PaginationResponse<LeaderboardAccountDTO> GetTopLeaderboardBySongId(int songId, PaginationParameter pagination)
         {
-            List<AccountSong> leaderboard =
+            List<LeaderboardAccountDTO> leaderboard =
                 _context
                     .AccountSongs
                     .Where(x => x.SongId == songId)
                     .OrderByDescending(x => x.BestScore)
-                    .Take(n)
+                    .GetCount(out var count)
+                    .GetPage(pagination)
+                    .Select(song => new LeaderboardAccountDTO
+                    {
+                        AccountId = song.AccountId,
+                        BestScore = song.BestScore
+                    })
                     .ToList();
 
-            List<LeaderboardAccountDTO> leaderboardAccount =
-                new();
-
-            foreach (AccountSong accountSong in leaderboard)
+            foreach (var accountSong in leaderboard)
             {
-
-                LeaderboardAccountDTO leaderboardAccountDTO =
-                    new();
-
-                leaderboardAccountDTO.AccountId = accountSong.AccountId;
-                leaderboardAccountDTO.UserName =
+                accountSong.UserName =
                     _context.Accounts
                         .FirstOrDefault(x => x.AccountId == accountSong.AccountId)
                         .UserName;
-                leaderboardAccountDTO.BestScore = accountSong.BestScore;
-
-                leaderboardAccount.Add(leaderboardAccountDTO);
             }
 
-            return leaderboardAccount;
+            return new PaginationResponse<LeaderboardAccountDTO>()
+            {
+                TotalRecords = count,
+                Payload = leaderboard
+            };
         }
 
-        public List<LeaderboardUserDTO> GetTopOneByUserId(int accountId)
+        public PaginationResponse<LeaderboardUserDTO> GetTopOneByUserId(int accountId, PaginationParameter pagination)
         {
-            List<AccountSong> leaderboard =
+            List<LeaderboardUserDTO> leaderboard =
                 _context.AccountSongs.AsEnumerable()
                     .GroupBy(x => x.SongId)
                     .SelectMany(x => x.OrderByDescending(y => y.BestScore).Take(1))
                     .OrderByDescending(x => x.BestScore)
                     .Where(x => x.AccountId == accountId)
+                    .GetCount(out var count)
+                    .GetPage(pagination)
+                    .Select(accountSong => new LeaderboardUserDTO
+                    {
+                        SongId = accountSong.SongId,
+                        AccountId = accountSong.AccountId,
+                        BestScore = accountSong.BestScore
+                    })
                     .ToList();
 
-            List<LeaderboardUserDTO> leaderboardUser =
-                new();
-
-            foreach (AccountSong accountSong in leaderboard)
+            foreach (var accountSong in leaderboard)
             {
-                LeaderboardUserDTO leaderboardUserDTO =
-                    new();
-
-                leaderboardUserDTO.SongId = accountSong.SongId;
-                leaderboardUserDTO.SongName =
+                accountSong.SongName =
                     _context
                         .Songs
                         .FirstOrDefault(x =>
                             x.SongId == accountSong.SongId)
                         .SongName;
-                leaderboardUserDTO.AccountId = accountId;
-                leaderboardUserDTO.UserName =
+                accountSong.UserName =
                     _context
                         .Accounts
                         .FirstOrDefault(x =>
                             x.AccountId == accountId)
                         .UserName;
-                leaderboardUserDTO.BestScore = accountSong.BestScore;
-
-                leaderboardUser.Add(leaderboardUserDTO);
             }
-            return leaderboardUser;
+            return new PaginationResponse<LeaderboardUserDTO>
+            {
+                TotalRecords = count,
+                Payload = leaderboard
+            };
         }
     }
 }
