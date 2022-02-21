@@ -30,10 +30,33 @@ namespace _4kTiles_Backend.Controllers
             return _leaderboardRepository.GetTopOneByUserId(accountId);
         }
 
-        [HttpPut]
-        [Authorize]
+        [HttpPut("Admin/{accountId:int}")]
+        [Authorize("Manager")]
         public ActionResult<ResponseDTO<AccountSong>> AddUserBestScore(int accountId, int songId, int score)
         {
+            AccountSong accountSong = _leaderboardRepository.AddUserBestScore(accountId, songId, score);
+            return Ok(new ResponseDTO<AccountSong>
+            {
+                StatusCode = StatusCodes.Status200OK,
+                Message = "Successfully added user best score",
+                Data = accountSong
+            });
+        }
+
+        [HttpPut("User")]
+        [Authorize]
+        public ActionResult<ResponseDTO<AccountSong>> AddUserBestScore(int songId, int score)
+        {
+            var badResponse = BadRequest(new ResponseDTO
+            {
+                StatusCode = StatusCodes.Status400BadRequest,
+                IsError = true,
+                Message = "Invalid token"
+            });
+            string? accountValueClaim = User.FindFirst("accountId")?.Value;
+            if (accountValueClaim is null) return badResponse;
+            if (!int.TryParse(accountValueClaim, out var accountId)) return badResponse;
+
             AccountSong accountSong = _leaderboardRepository.AddUserBestScore(accountId, songId, score);
             return Ok(new ResponseDTO<AccountSong>
             {
