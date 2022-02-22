@@ -2,7 +2,9 @@ using System.Linq;
 using _4kTiles_Backend.Context;
 using _4kTiles_Backend.DataObjects.DTO;
 using _4kTiles_Backend.DataObjects.DTO.LibraryFilterDTO;
+using _4kTiles_Backend.DataObjects.DTO.Pagination;
 using _4kTiles_Backend.Entities;
+using _4kTiles_Backend.Helpers;
 
 using Microsoft.EntityFrameworkCore;
 
@@ -10,10 +12,10 @@ namespace _4kTiles_Backend.Services.Repositories
 {
     public interface ILibraryRepository
     {
-        Task<List<Song>?> GetPublicSongs();
-        Task<List<Song>?> GetPrivateSongs(int id);
-        Task<List<Song>?> GetSongByFilters(LibraryFilterDTO filter);
-        Task<List<Song>?> GetSongByGenre(string name);
+        Task<PaginationResponse<Song>> GetPublicSongs(PaginationParameter pagination);
+        Task<PaginationResponse<Song>?> GetPrivateSongs(int id, PaginationParameter pagination);
+        Task<PaginationResponse<Song>> GetSongByFilters(LibraryFilterDTO filter, PaginationParameter pagination);
+        Task<PaginationResponse<Song>?> GetSongByGenre(string name, PaginationParameter pagination);
 
 
     }
@@ -31,19 +33,29 @@ namespace _4kTiles_Backend.Services.Repositories
         /// <summary>
         /// Get public songs
         /// </summary>
+        /// <param name="pagination"></param>
         /// <returns>List of public songs</returns>
-        public async Task<List<Song>?> GetPublicSongs()
+        public async Task<PaginationResponse<Song>> GetPublicSongs(PaginationParameter pagination)
         {
-            var publicSong = await _context.Songs.Where(s => s.IsPublic == true).ToListAsync();
-            return publicSong;
+            var publicSong = await _context.Songs
+                .Where(s => s.IsPublic == true)
+                .GetCount(out var count)
+                .GetPage(pagination)
+                .ToListAsync();
+            return new PaginationResponse<Song>()
+            {
+                Payload = publicSong,
+                TotalRecords = count
+            };
         }
 
         /// <summary>
         /// Get private songs of user
         /// </summary>
         /// <param name="id"></param>
+        /// <param name="pagination"></param>
         /// <returns>List of private songs of user</returns>
-        public async Task<List<Song>?> GetPrivateSongs(int id)
+        public async Task<PaginationResponse<Song>?> GetPrivateSongs(int id, PaginationParameter pagination)
         {
             var account = await _accountRepository.GetAccountById(id);
             if (account == null)
@@ -51,17 +63,26 @@ namespace _4kTiles_Backend.Services.Repositories
                 return null;
             }
             string name = account.UserName;
-            var accountSong = await _context.Songs.Where(s => s.Author == name).ToListAsync();
+            var accountSong = await _context.Songs
+                .Where(s => s.Author == name)
+                .GetCount(out var count)
+                .GetPage(pagination)
+                .ToListAsync();
 
-            return accountSong;
+            return new PaginationResponse<Song>()
+            {
+                TotalRecords = count,
+                Payload = accountSong
+            };
         }
 
         /// <summary>
         /// Search songs by Filters
         /// </summary>
         /// <param name="filter"></param>
+        /// <param name="pagination"></param>
         /// <returns>List of public songs satisfied the Filter</returns>
-        public async Task<List<Song>?> GetSongByFilters(LibraryFilterDTO filter)
+        public async Task<PaginationResponse<Song>> GetSongByFilters(LibraryFilterDTO filter, PaginationParameter pagination)
         {
             var songQ = _context.Songs.Where(s => s.IsPublic == true);
             if (filter.Name != "")
@@ -98,7 +119,13 @@ namespace _4kTiles_Backend.Services.Repositories
 
                 result.RemoveAll(s => !list.Contains(s.SongId));
             }
-            return result;
+
+            var pagedResult = result.GetCount(out var count).GetPage(pagination);
+            return new PaginationResponse<Song>()
+            {
+                TotalRecords = count,
+                Payload = pagedResult
+            };
         }
 
         /// <summary>
@@ -122,11 +149,12 @@ namespace _4kTiles_Backend.Services.Repositories
         /// Get songs by Genre
         /// </summary>
         /// <param name="name"></param>
+        /// <param name="pagination"></param>
         /// <returns>List of songs sastified the Genre</returns>
-        public async Task<List<Song>?> GetSongByGenre(string name)
+        public async Task<PaginationResponse<Song>?> GetSongByGenre(string name, PaginationParameter pagination)
         {
             List<int> list = new List<int>();
-            var add = GenreFilter(name);
+            var add = await GenreFilter(name);
             if (add != null)
             {
                 list.AddRange((IEnumerable<int>)add);
@@ -135,10 +163,15 @@ namespace _4kTiles_Backend.Services.Repositories
             {
                 return null;
             }
-            var result =await _context.Songs.Where(s => s.IsPublic == true).ToListAsync();
+            var result = await _context.Songs.Where(s => s.IsPublic == true).ToListAsync();
             result.RemoveAll(s => !list.Contains(s.SongId));
 
-            return result;
+            var pagedResult = result.GetCount(out var count).GetPage(pagination);
+            return new PaginationResponse<Song>()
+            {
+                TotalRecords = count,
+                Payload = pagedResult
+            };
         }
 
         /// <summary>
@@ -153,12 +186,6 @@ namespace _4kTiles_Backend.Services.Repositories
             {
                 return null;
             }
-            var songByGenre =await _context.SongGenres.Where(s => s.GenreId == genre.GenreId).Select(s => s.SongId).ToListAsync();
-            if (songByGenre == null)
-            {
-                return null;
-            }
-
             var songId =await _context.SongGenres.Where(s => s.GenreId == genre.GenreId).Select(s => s.SongId).ToListAsync();
             return songId;
         }

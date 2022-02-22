@@ -19,7 +19,7 @@ namespace _4kTiles_Backend.Services.Repositories
         Task<SongReportDAO?> GetReportByID(int id);
         Task<int> CreateReport(CreateReportDAO reportDAO);
         Task<int> ChangeReportStatus(int id, bool status);
-        Task<List<SongReportDAO>> GetListReport(ReportFilter filter);
+        Task<PaginationResponse<SongReportDAO>> GetListReport(ReportFilter filter, PaginationParameter pagination);
     }
 
     public class SongReportRepository : ISongReportRepository
@@ -78,12 +78,14 @@ namespace _4kTiles_Backend.Services.Repositories
                 return -1;
             }
         }
+
         /// <summary>
         /// Get List Report
         /// </summary>
         /// <param name="filter"></param>
+        /// <param name="pagination"></param>
         /// <returns></returns>
-        public async Task<List<SongReportDAO>> GetListReport(ReportFilter filter)
+        public async Task<PaginationResponse<SongReportDAO>> GetListReport(ReportFilter filter, PaginationParameter pagination)
         {
             var query = _dbContext.SongReports.AsQueryable();
             
@@ -108,9 +110,15 @@ namespace _4kTiles_Backend.Services.Repositories
             }
             //Sort date
             query = query.OrderByDescending(r => r.ReportDate);
-            var list = await query.ToListAsync();
-
-            return _mapper.Map<List<SongReportDAO>>(list); 
+            var list = await query
+                .GetCount(out var count)
+                .GetPage(pagination)
+                .ToListAsync();
+            
+            return new PaginationResponse<SongReportDAO>
+            {
+                TotalRecords = count, Payload = _mapper.Map<List<SongReportDAO>>(list)
+            };
         }
     }
 }
