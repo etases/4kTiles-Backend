@@ -17,4 +17,5 @@ RUN dotnet publish "4kTiles-Backend.csproj" -c Release -o /app/publish /p:UseApp
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-CMD ASPNETCORE_URLS=http://*:$PORT dotnet 4kTiles-Backend.dll
+
+ENV ASPNETCORE_URLS=http://*:$PORT

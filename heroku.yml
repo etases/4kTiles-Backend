@@ -5,3 +5,5 @@
 build:
   docker:
     web: Dockerfile
+run:
+  web: dotnet 4kTiles-Backend.dll
