@@ -77,7 +77,6 @@ builder.Services.AddDbContextPool<ApplicationDbContext>(options =>
     else
     {
         var connectionUrl = Environment.GetEnvironmentVariable("DATABASE_URL")!;
-        Console.WriteLine(connectionUrl);
         var databaseUri = new Uri(connectionUrl!);
         var db = databaseUri.LocalPath.TrimStart('/');
         var userInfo = databaseUri.UserInfo.Split(':', StringSplitOptions.RemoveEmptyEntries);
