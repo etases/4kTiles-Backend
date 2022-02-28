@@ -143,6 +143,7 @@ var app = builder.Build();
 
 // Log if the email service is enabled
 app.Logger.LogInformation($"Enable email service: {emailConfig.Enabled}");
+app.Logger.LogInformation($"Email used: {emailConfig.MailAddress}");
 
 // Enable Swagger/OpenAPI middleware
 // Configure the HTTP request pipeline.
