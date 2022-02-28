@@ -8,67 +8,63 @@ namespace _4kTiles_Backend.Context
 {
     public partial class ApplicationDbContext : DbContext
     {
-        public ApplicationDbContext()
-        {
-        }
-
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
         }
 
         public virtual DbSet<Account> Accounts { get; set; } = null!;
-        public virtual DbSet<Accountrole> Accountroles { get; set; } = null!;
-        public virtual DbSet<Accountsong> Accountsongs { get; set; } = null!;
+        public virtual DbSet<AccountRole> AccountRoles { get; set; } = null!;
+        public virtual DbSet<AccountSong> AccountSongs { get; set; } = null!;
         public virtual DbSet<Genre> Genres { get; set; } = null!;
         public virtual DbSet<Role> Roles { get; set; } = null!;
         public virtual DbSet<Song> Songs { get; set; } = null!;
-        public virtual DbSet<Songgenre> Songgenres { get; set; } = null!;
-        public virtual DbSet<Songreport> Songreports { get; set; } = null!;
-        public virtual DbSet<Songtag> Songtags { get; set; } = null!;
+        public virtual DbSet<SongGenre> SongGenres { get; set; } = null!;
+        public virtual DbSet<SongReport> SongReports { get; set; } = null!;
+        public virtual DbSet<SongTag> SongTags { get; set; } = null!;
         public virtual DbSet<Tag> Tags { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Account>(entity =>
             {
-                entity.Property(e => e.Deletedreason).HasDefaultValueSql("NULL::character varying");
-
+                entity.Property(e => e.DeletedReason).HasDefaultValueSql("NULL::character varying");
+                
                 entity.Property(e => e.Dob).HasDefaultValueSql("CURRENT_TIMESTAMP");
             });
 
-            modelBuilder.Entity<Accountrole>(entity =>
+            modelBuilder.Entity<AccountRole>(entity =>
             {
-                entity.HasKey(e => e.Arid)
+                entity.HasKey(e => e.ArId)
                     .HasName("accountrole_pkey");
 
                 entity.HasOne(d => d.Account)
-                    .WithMany(p => p.Accountroles)
-                    .HasForeignKey(d => d.Accountid)
+                    .WithMany(p => p.AccountRoles)
+                    .HasForeignKey(d => d.AccountId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("accountrole_accountid_fkey");
 
                 entity.HasOne(d => d.Role)
-                    .WithMany(p => p.Accountroles)
-                    .HasForeignKey(d => d.Roleid)
+                    .WithMany(p => p.AccountRoles)
+                    .HasForeignKey(d => d.RoleId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("accountrole_roleid_fkey");
             });
 
-            modelBuilder.Entity<Accountsong>(entity =>
+            modelBuilder.Entity<AccountSong>(entity =>
             {
-                entity.HasKey(e => e.Asid)
+                entity.HasKey(e => e.AsId)
                     .HasName("accountsong_pkey");
 
                 entity.HasOne(d => d.Account)
-                    .WithMany(p => p.Accountsongs)
-                    .HasForeignKey(d => d.Accountid)
+                    .WithMany(p => p.AccountSongs)
+                    .HasForeignKey(d => d.AccountId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("accountsong_accountid_fkey");
 
                 entity.HasOne(d => d.Song)
-                    .WithMany(p => p.Accountsongs)
-                    .HasForeignKey(d => d.Songid)
+                    .WithMany(p => p.AccountSongs)
+                    .HasForeignKey(d => d.SongId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("accountsong_songid_fkey");
             });
@@ -77,63 +73,63 @@ namespace _4kTiles_Backend.Context
             {
                 entity.Property(e => e.Bpm).HasDefaultValueSql("100");
 
-                entity.Property(e => e.Deletedreason).HasDefaultValueSql("NULL::character varying");
+                entity.Property(e => e.DeletedReason).HasDefaultValueSql("NULL::character varying");
 
-                entity.Property(e => e.Releasedate).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(e => e.ReleaseDate).HasDefaultValueSql("CURRENT_TIMESTAMP");
             });
 
-            modelBuilder.Entity<Songgenre>(entity =>
+            modelBuilder.Entity<SongGenre>(entity =>
             {
-                entity.HasKey(e => e.Sgid)
+                entity.HasKey(e => e.SgId)
                     .HasName("songgenre_pkey");
 
                 entity.HasOne(d => d.Genre)
-                    .WithMany(p => p.Songgenres)
-                    .HasForeignKey(d => d.Genreid)
+                    .WithMany(p => p.SongGenres)
+                    .HasForeignKey(d => d.GenreId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("songgenre_genreid_fkey");
 
                 entity.HasOne(d => d.Song)
-                    .WithMany(p => p.Songgenres)
-                    .HasForeignKey(d => d.Songid)
+                    .WithMany(p => p.SongGenres)
+                    .HasForeignKey(d => d.SongId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("songgenre_songid_fkey");
             });
 
-            modelBuilder.Entity<Songreport>(entity =>
+            modelBuilder.Entity<SongReport>(entity =>
             {
-                entity.HasKey(e => e.Reportid)
+                entity.HasKey(e => e.ReportId)
                     .HasName("songreport_pkey");
 
-                entity.Property(e => e.Reportdate).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(e => e.ReportDate).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                 entity.HasOne(d => d.Account)
-                    .WithMany(p => p.Songreports)
-                    .HasForeignKey(d => d.Accountid)
+                    .WithMany(p => p.SongReports)
+                    .HasForeignKey(d => d.AccountId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("songreport_accountid_fkey");
 
                 entity.HasOne(d => d.Song)
-                    .WithMany(p => p.Songreports)
-                    .HasForeignKey(d => d.Songid)
+                    .WithMany(p => p.SongReports)
+                    .HasForeignKey(d => d.SongId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("songreport_songid_fkey");
             });
 
-            modelBuilder.Entity<Songtag>(entity =>
+            modelBuilder.Entity<SongTag>(entity =>
             {
-                entity.HasKey(e => e.Stid)
+                entity.HasKey(e => e.StId)
                     .HasName("songtag_pkey");
 
                 entity.HasOne(d => d.Song)
-                    .WithMany(p => p.Songtags)
-                    .HasForeignKey(d => d.Songid)
+                    .WithMany(p => p.SongTags)
+                    .HasForeignKey(d => d.SongId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("songtag_songid_fkey");
 
                 entity.HasOne(d => d.Tag)
-                    .WithMany(p => p.Songtags)
-                    .HasForeignKey(d => d.Tagid)
+                    .WithMany(p => p.SongTags)
+                    .HasForeignKey(d => d.TagId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("songtag_tagid_fkey");
             });

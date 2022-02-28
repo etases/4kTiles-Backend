@@ -11,17 +11,17 @@ namespace _4kTiles_Backend.Entities
     {
         public Role()
         {
-            Accountroles = new HashSet<Accountrole>();
+            AccountRoles = new HashSet<AccountRole>();
         }
 
         [Key]
         [Column("roleid")]
-        public int Roleid { get; set; }
+        public int RoleId { get; set; }
         [Column("rolename")]
         [StringLength(50)]
-        public string Rolename { get; set; } = null!;
+        public string RoleName { get; set; } = null!;
 
-        [InverseProperty(nameof(Accountrole.Role))]
-        public virtual ICollection<Accountrole> Accountroles { get; set; }
+        [InverseProperty(nameof(AccountRole.Role))]
+        public virtual ICollection<AccountRole> AccountRoles { get; set; }
     }
 }

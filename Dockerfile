@@ -1,9 +1,7 @@
 FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
 WORKDIR /app
-# EXPOSE 5000
-
-# ENV ASPNETCORE_URLS=http://+:5000
-ENV ASPNETCORE_URLS=http://+:$PORT
+EXPOSE 80
+EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
@@ -19,5 +17,4 @@ RUN dotnet publish "4kTiles-Backend.csproj" -c Release -o /app/publish /p:UseApp
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-
-CMD ["dotnet", "4kTiles-Backend.dll"]
+CMD ["ASPNETCORE_URLS=http://*:$PORT", "dotnet", "4kTiles-Backend.dll"]

@@ -7,31 +7,31 @@ using Microsoft.EntityFrameworkCore;
 namespace _4kTiles_Backend.Entities
 {
     [Table("songreport")]
-    public partial class Songreport
+    public partial class SongReport
     {
         [Key]
         [Column("reportid")]
-        public int Reportid { get; set; }
+        public int ReportId { get; set; }
         [Column("songid")]
-        public int Songid { get; set; }
+        public int SongId { get; set; }
         [Column("accountid")]
-        public int Accountid { get; set; }
+        public int AccountId { get; set; }
         [Column("reporttitle")]
         [StringLength(255)]
-        public string Reporttitle { get; set; } = null!;
+        public string ReportTitle { get; set; } = null!;
         [Column("reportreason")]
         [StringLength(255)]
-        public string Reportreason { get; set; } = null!;
+        public string ReportReason { get; set; } = null!;
         [Column("reportdate", TypeName = "timestamp without time zone")]
-        public DateTime Reportdate { get; set; }
+        public DateTime ReportDate { get; set; }
         [Column("reportstatus")]
-        public bool? Reportstatus { get; set; }
+        public bool? ReportStatus { get; set; }
 
-        [ForeignKey(nameof(Accountid))]
-        [InverseProperty("Songreports")]
+        [ForeignKey(nameof(AccountId))]
+        [InverseProperty("SongReports")]
         public virtual Account Account { get; set; } = null!;
-        [ForeignKey(nameof(Songid))]
-        [InverseProperty("Songreports")]
+        [ForeignKey(nameof(SongId))]
+        [InverseProperty("SongReports")]
         public virtual Song Song { get; set; } = null!;
     }
 }

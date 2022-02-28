@@ -7,21 +7,21 @@ using Microsoft.EntityFrameworkCore;
 namespace _4kTiles_Backend.Entities
 {
     [Table("accountrole")]
-    public partial class Accountrole
+    public partial class AccountRole
     {
         [Key]
         [Column("arid")]
-        public int Arid { get; set; }
+        public int ArId { get; set; }
         [Column("accountid")]
-        public int Accountid { get; set; }
+        public int AccountId { get; set; }
         [Column("roleid")]
-        public int Roleid { get; set; }
+        public int RoleId { get; set; }
 
-        [ForeignKey(nameof(Accountid))]
-        [InverseProperty("Accountroles")]
+        [ForeignKey(nameof(AccountId))]
+        [InverseProperty("AccountRoles")]
         public virtual Account Account { get; set; } = null!;
-        [ForeignKey(nameof(Roleid))]
-        [InverseProperty("Accountroles")]
+        [ForeignKey(nameof(RoleId))]
+        [InverseProperty("AccountRoles")]
         public virtual Role Role { get; set; } = null!;
     }
 }

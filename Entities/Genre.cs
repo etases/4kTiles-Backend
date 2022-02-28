@@ -11,17 +11,17 @@ namespace _4kTiles_Backend.Entities
     {
         public Genre()
         {
-            Songgenres = new HashSet<Songgenre>();
+            SongGenres = new HashSet<SongGenre>();
         }
 
         [Key]
         [Column("genreid")]
-        public int Genreid { get; set; }
+        public int GenreId { get; set; }
         [Column("genrename")]
         [StringLength(50)]
-        public string Genrename { get; set; } = null!;
+        public string GenreName { get; set; } = null!;
 
-        [InverseProperty(nameof(Songgenre.Genre))]
-        public virtual ICollection<Songgenre> Songgenres { get; set; }
+        [InverseProperty(nameof(SongGenre.Genre))]
+        public virtual ICollection<SongGenre> SongGenres { get; set; }
     }
 }

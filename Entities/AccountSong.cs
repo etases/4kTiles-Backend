@@ -7,23 +7,23 @@ using Microsoft.EntityFrameworkCore;
 namespace _4kTiles_Backend.Entities
 {
     [Table("accountsong")]
-    public partial class Accountsong
+    public partial class AccountSong
     {
         [Key]
         [Column("asid")]
-        public int Asid { get; set; }
+        public int AsId { get; set; }
         [Column("accountid")]
-        public int Accountid { get; set; }
+        public int AccountId { get; set; }
         [Column("songid")]
-        public int Songid { get; set; }
+        public int SongId { get; set; }
         [Column("bestscore")]
-        public int Bestscore { get; set; }
+        public int BestScore { get; set; }
 
-        [ForeignKey(nameof(Accountid))]
-        [InverseProperty("Accountsongs")]
+        [ForeignKey(nameof(AccountId))]
+        [InverseProperty("AccountSongs")]
         public virtual Account Account { get; set; } = null!;
-        [ForeignKey(nameof(Songid))]
-        [InverseProperty("Accountsongs")]
+        [ForeignKey(nameof(SongId))]
+        [InverseProperty("AccountSongs")]
         public virtual Song Song { get; set; } = null!;
     }
 }

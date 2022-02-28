@@ -11,19 +11,19 @@ namespace _4kTiles_Backend.Entities
     {
         public Tag()
         {
-            Songtags = new HashSet<Songtag>();
+            SongTags = new HashSet<SongTag>();
         }
 
         [Key]
         [Column("tagid")]
-        public int Tagid { get; set; }
+        public int TagId { get; set; }
         [Column("tagname")]
         [StringLength(50)]
-        public string Tagname { get; set; } = null!;
+        public string TagName { get; set; } = null!;
         [Column("ispublishertag")]
-        public bool Ispublishertag { get; set; }
+        public bool IsPublisherTag { get; set; }
 
-        [InverseProperty(nameof(Songtag.Tag))]
-        public virtual ICollection<Songtag> Songtags { get; set; }
+        [InverseProperty(nameof(SongTag.Tag))]
+        public virtual ICollection<SongTag> SongTags { get; set; }
     }
 }
