@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace _4kTiles_Backend.Entities
 {
-    [Table("Tag")]
+    [Table("tag")]
     public partial class Tag
     {
         public Tag()
@@ -15,12 +15,12 @@ namespace _4kTiles_Backend.Entities
         }
 
         [Key]
-        [Column("tagId")]
+        [Column("tagid")]
         public int TagId { get; set; }
-        [Column("tagName")]
+        [Column("tagname")]
         [StringLength(50)]
         public string TagName { get; set; } = null!;
-        [Column("isPublisherTag")]
+        [Column("ispublishertag")]
         public bool IsPublisherTag { get; set; }
 
         [InverseProperty(nameof(SongTag.Tag))]

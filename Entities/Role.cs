@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace _4kTiles_Backend.Entities
 {
-    [Table("Role")]
+    [Table("role")]
     public partial class Role
     {
         public Role()
@@ -15,9 +15,9 @@ namespace _4kTiles_Backend.Entities
         }
 
         [Key]
-        [Column("roleId")]
+        [Column("roleid")]
         public int RoleId { get; set; }
-        [Column("roleName")]
+        [Column("rolename")]
         [StringLength(50)]
         public string RoleName { get; set; } = null!;
 

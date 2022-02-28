@@ -6,15 +6,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace _4kTiles_Backend.Entities
 {
-    [Table("SongTag")]
+    [Table("songtag")]
     public partial class SongTag
     {
         [Key]
-        [Column("stId")]
+        [Column("stid")]
         public int StId { get; set; }
-        [Column("songId")]
+        [Column("songid")]
         public int SongId { get; set; }
-        [Column("tagId")]
+        [Column("tagid")]
         public int TagId { get; set; }
 
         [ForeignKey(nameof(SongId))]

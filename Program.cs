@@ -1,17 +1,19 @@
+using System.Net;
+using System.Reflection;
+using System.Text;
+
 using _4kTiles_Backend.Context;
-using _4kTiles_Backend.Services.Repositories;
+using _4kTiles_Backend.DataObjects.DTO.Response;
 using _4kTiles_Backend.Services.Auth;
+using _4kTiles_Backend.Services.Email;
+using _4kTiles_Backend.Services.Repositories;
+
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using System.Reflection;
-using System.Text;
-using _4kTiles_Backend.DataObjects.DTO.Response;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
-
-using _4kTiles_Backend.Services.Email;
 
 // --------------------------------------------------
 // create builder instance
@@ -70,9 +72,16 @@ builder.Services.AddSwaggerGen(configs =>
 // Add the database context to the services
 builder.Services.AddDbContextPool<ApplicationDbContext>(options =>
 {
-    options.UseSqlServer(builder.Environment.IsDevelopment()
-        ? builder.Configuration.GetConnectionString("DevelopmentDB")
-        : builder.Configuration.GetConnectionString("development"));
+    if (builder.Environment.IsDevelopment())
+        options.UseNpgsql(builder.Configuration.GetConnectionString("DevelopmentDB"));
+    else
+    {
+        var connectionUrl = Environment.GetEnvironmentVariable("DATABASE_URL")!;
+        var databaseUri = new Uri(connectionUrl!);
+        var db = databaseUri.LocalPath.TrimStart('/');
+        var userInfo = databaseUri.UserInfo.Split(':', StringSplitOptions.RemoveEmptyEntries);
+        options.UseNpgsql($"User ID={userInfo[0]};Password={userInfo[1]};Host={databaseUri.Host};Port={databaseUri.Port};Database={db};Pooling=true;SSL Mode=Require;Trust Server Certificate=True;");
+    }
 });
 
 // Add AutoMapper to the services
@@ -127,10 +136,13 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 });
 
 // Add cors
-builder.Services.AddCors();
+// builder.Services.AddCors();
 // --------------------------------------------------
 // Build the application
 var app = builder.Build();
+
+// Log if the email service is enabled
+app.Logger.LogInformation($"Enable email service: {emailConfig.Enabled}");
 
 // Enable Swagger/OpenAPI middleware
 // Configure the HTTP request pipeline.
@@ -145,13 +157,13 @@ app.UseSwaggerUI(configs =>
 // }
 
 // Enable cors
-app.UseCors(corsPolicyBuilder =>
-{
-    corsPolicyBuilder.WithOrigins(new[] { "https://localhost", "http://fktiles.azurewebsites.net" });
-    corsPolicyBuilder.AllowAnyHeader();
-    corsPolicyBuilder.AllowAnyMethod();
-    corsPolicyBuilder.AllowCredentials();
-});
+// app.UseCors(corsPolicyBuilder =>
+// {
+//     corsPolicyBuilder.WithOrigins(new[] { "https://localhost", "http://fktiles.azurewebsites.net" });
+//     corsPolicyBuilder.AllowAnyHeader();
+//     corsPolicyBuilder.AllowAnyMethod();
+//     corsPolicyBuilder.AllowCredentials();
+// });
 
 app.UseHttpsRedirection();
 

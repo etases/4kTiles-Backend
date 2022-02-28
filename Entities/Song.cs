@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace _4kTiles_Backend.Entities
 {
-    [Table("Song")]
+    [Table("song")]
     public partial class Song
     {
         public Song()
@@ -18,9 +18,9 @@ namespace _4kTiles_Backend.Entities
         }
 
         [Key]
-        [Column("songId")]
+        [Column("songid")]
         public int SongId { get; set; }
-        [Column("songName")]
+        [Column("songname")]
         [StringLength(255)]
         public string SongName { get; set; } = null!;
         [Column("author")]
@@ -31,13 +31,13 @@ namespace _4kTiles_Backend.Entities
         [Column("notes")]
         [StringLength(1000)]
         public string Notes { get; set; } = null!;
-        [Column("releaseDate", TypeName = "datetime")]
+        [Column("releasedate", TypeName = "timestamp without time zone")]
         public DateTime ReleaseDate { get; set; }
-        [Column("isPublic")]
+        [Column("ispublic")]
         public bool IsPublic { get; set; }
-        [Column("isDeleted")]
+        [Column("isdeleted")]
         public bool IsDeleted { get; set; }
-        [Column("deletedReason")]
+        [Column("deletedreason")]
         [StringLength(255)]
         public string? DeletedReason { get; set; }
 

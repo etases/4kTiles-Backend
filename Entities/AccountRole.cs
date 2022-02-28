@@ -6,15 +6,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace _4kTiles_Backend.Entities
 {
-    [Table("AccountRole")]
+    [Table("accountrole")]
     public partial class AccountRole
     {
         [Key]
-        [Column("arId")]
+        [Column("arid")]
         public int ArId { get; set; }
-        [Column("accountId")]
+        [Column("accountid")]
         public int AccountId { get; set; }
-        [Column("roleId")]
+        [Column("roleid")]
         public int RoleId { get; set; }
 
         [ForeignKey(nameof(AccountId))]

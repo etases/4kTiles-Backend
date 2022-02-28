@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace _4kTiles_Backend.Entities
 {
-    [Table("Account")]
+    [Table("account")]
     public partial class Account
     {
         public Account()
@@ -17,22 +17,22 @@ namespace _4kTiles_Backend.Entities
         }
 
         [Key]
-        [Column("accountId")]
+        [Column("accountid")]
         public int AccountId { get; set; }
-        [Column("userName")]
+        [Column("username")]
         [StringLength(50)]
         public string UserName { get; set; } = null!;
-        [Column("hashedPassword")]
+        [Column("hashedpassword")]
         [StringLength(255)]
         public string HashedPassword { get; set; } = null!;
-        [Column("dob", TypeName = "datetime")]
+        [Column("dob", TypeName = "timestamp without time zone")]
         public DateTime? Dob { get; set; }
         [Column("email")]
         [StringLength(255)]
         public string Email { get; set; } = null!;
-        [Column("isDeleted")]
+        [Column("isdeleted")]
         public bool IsDeleted { get; set; }
-        [Column("deletedReason")]
+        [Column("deletedreason")]
         [StringLength(255)]
         public string? DeletedReason { get; set; }
 

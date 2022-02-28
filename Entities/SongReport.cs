@@ -6,25 +6,25 @@ using Microsoft.EntityFrameworkCore;
 
 namespace _4kTiles_Backend.Entities
 {
-    [Table("SongReport")]
+    [Table("songreport")]
     public partial class SongReport
     {
         [Key]
-        [Column("reportId")]
+        [Column("reportid")]
         public int ReportId { get; set; }
-        [Column("songId")]
+        [Column("songid")]
         public int SongId { get; set; }
-        [Column("accountId")]
+        [Column("accountid")]
         public int AccountId { get; set; }
-        [Column("reportTitle")]
+        [Column("reporttitle")]
         [StringLength(255)]
         public string ReportTitle { get; set; } = null!;
-        [Column("reportReason")]
+        [Column("reportreason")]
         [StringLength(255)]
         public string ReportReason { get; set; } = null!;
-        [Column("reportDate", TypeName = "datetime")]
+        [Column("reportdate", TypeName = "timestamp without time zone")]
         public DateTime ReportDate { get; set; }
-        [Column("reportStatus")]
+        [Column("reportstatus")]
         public bool? ReportStatus { get; set; }
 
         [ForeignKey(nameof(AccountId))]

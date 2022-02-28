@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace _4kTiles_Backend.Entities
 {
-    [Table("Genre")]
+    [Table("genre")]
     public partial class Genre
     {
         public Genre()
@@ -15,9 +15,9 @@ namespace _4kTiles_Backend.Entities
         }
 
         [Key]
-        [Column("genreId")]
+        [Column("genreid")]
         public int GenreId { get; set; }
-        [Column("genreName")]
+        [Column("genrename")]
         [StringLength(50)]
         public string GenreName { get; set; } = null!;
 

@@ -6,17 +6,17 @@ using Microsoft.EntityFrameworkCore;
 
 namespace _4kTiles_Backend.Entities
 {
-    [Table("AccountSong")]
+    [Table("accountsong")]
     public partial class AccountSong
     {
         [Key]
-        [Column("asId")]
+        [Column("asid")]
         public int AsId { get; set; }
-        [Column("accountId")]
+        [Column("accountid")]
         public int AccountId { get; set; }
-        [Column("songId")]
+        [Column("songid")]
         public int SongId { get; set; }
-        [Column("bestScore")]
+        [Column("bestscore")]
         public int BestScore { get; set; }
 
         [ForeignKey(nameof(AccountId))]
