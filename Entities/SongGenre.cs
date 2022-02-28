@@ -6,22 +6,22 @@ using Microsoft.EntityFrameworkCore;
 
 namespace _4kTiles_Backend.Entities
 {
-    [Table("SongGenre")]
-    public partial class SongGenre
+    [Table("songgenre")]
+    public partial class Songgenre
     {
         [Key]
-        [Column("sgId")]
-        public int SgId { get; set; }
-        [Column("songId")]
-        public int SongId { get; set; }
-        [Column("genreId")]
-        public int GenreId { get; set; }
+        [Column("sgid")]
+        public int Sgid { get; set; }
+        [Column("songid")]
+        public int Songid { get; set; }
+        [Column("genreid")]
+        public int Genreid { get; set; }
 
-        [ForeignKey(nameof(GenreId))]
-        [InverseProperty("SongGenres")]
+        [ForeignKey(nameof(Genreid))]
+        [InverseProperty("Songgenres")]
         public virtual Genre Genre { get; set; } = null!;
-        [ForeignKey(nameof(SongId))]
-        [InverseProperty("SongGenres")]
+        [ForeignKey(nameof(Songid))]
+        [InverseProperty("Songgenres")]
         public virtual Song Song { get; set; } = null!;
     }
 }

@@ -6,22 +6,22 @@ using Microsoft.EntityFrameworkCore;
 
 namespace _4kTiles_Backend.Entities
 {
-    [Table("genre")]
+    [Table("Genre")]
     public partial class Genre
     {
         public Genre()
         {
-            Songgenres = new HashSet<Songgenre>();
+            SongGenres = new HashSet<SongGenre>();
         }
 
         [Key]
-        [Column("genreid")]
-        public int Genreid { get; set; }
-        [Column("genrename")]
+        [Column("genreId")]
+        public int GenreId { get; set; }
+        [Column("genreName")]
         [StringLength(50)]
-        public string Genrename { get; set; } = null!;
+        public string GenreName { get; set; } = null!;
 
-        [InverseProperty(nameof(Songgenre.Genre))]
-        public virtual ICollection<Songgenre> Songgenres { get; set; }
+        [InverseProperty(nameof(SongGenre.Genre))]
+        public virtual ICollection<SongGenre> SongGenres { get; set; }
     }
 }

@@ -6,24 +6,24 @@ using Microsoft.EntityFrameworkCore;
 
 namespace _4kTiles_Backend.Entities
 {
-    [Table("Tag")]
+    [Table("tag")]
     public partial class Tag
     {
         public Tag()
         {
-            SongTags = new HashSet<SongTag>();
+            Songtags = new HashSet<Songtag>();
         }
 
         [Key]
-        [Column("tagId")]
-        public int TagId { get; set; }
-        [Column("tagName")]
+        [Column("tagid")]
+        public int Tagid { get; set; }
+        [Column("tagname")]
         [StringLength(50)]
-        public string TagName { get; set; } = null!;
-        [Column("isPublisherTag")]
-        public bool IsPublisherTag { get; set; }
+        public string Tagname { get; set; } = null!;
+        [Column("ispublishertag")]
+        public bool Ispublishertag { get; set; }
 
-        [InverseProperty(nameof(SongTag.Tag))]
-        public virtual ICollection<SongTag> SongTags { get; set; }
+        [InverseProperty(nameof(Songtag.Tag))]
+        public virtual ICollection<Songtag> Songtags { get; set; }
     }
 }

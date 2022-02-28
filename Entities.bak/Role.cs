@@ -6,22 +6,22 @@ using Microsoft.EntityFrameworkCore;
 
 namespace _4kTiles_Backend.Entities
 {
-    [Table("role")]
+    [Table("Role")]
     public partial class Role
     {
         public Role()
         {
-            Accountroles = new HashSet<Accountrole>();
+            AccountRoles = new HashSet<AccountRole>();
         }
 
         [Key]
-        [Column("roleid")]
-        public int Roleid { get; set; }
-        [Column("rolename")]
+        [Column("roleId")]
+        public int RoleId { get; set; }
+        [Column("roleName")]
         [StringLength(50)]
-        public string Rolename { get; set; } = null!;
+        public string RoleName { get; set; } = null!;
 
-        [InverseProperty(nameof(Accountrole.Role))]
-        public virtual ICollection<Accountrole> Accountroles { get; set; }
+        [InverseProperty(nameof(AccountRole.Role))]
+        public virtual ICollection<AccountRole> AccountRoles { get; set; }
     }
 }

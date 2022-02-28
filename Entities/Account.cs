@@ -6,41 +6,41 @@ using Microsoft.EntityFrameworkCore;
 
 namespace _4kTiles_Backend.Entities
 {
-    [Table("Account")]
+    [Table("account")]
     public partial class Account
     {
         public Account()
         {
-            AccountRoles = new HashSet<AccountRole>();
-            AccountSongs = new HashSet<AccountSong>();
-            SongReports = new HashSet<SongReport>();
+            Accountroles = new HashSet<Accountrole>();
+            Accountsongs = new HashSet<Accountsong>();
+            Songreports = new HashSet<Songreport>();
         }
 
         [Key]
-        [Column("accountId")]
-        public int AccountId { get; set; }
-        [Column("userName")]
+        [Column("accountid")]
+        public int Accountid { get; set; }
+        [Column("username")]
         [StringLength(50)]
-        public string UserName { get; set; } = null!;
-        [Column("hashedPassword")]
+        public string Username { get; set; } = null!;
+        [Column("hashedpassword")]
         [StringLength(255)]
-        public string HashedPassword { get; set; } = null!;
-        [Column("dob", TypeName = "datetime")]
+        public string Hashedpassword { get; set; } = null!;
+        [Column("dob", TypeName = "timestamp without time zone")]
         public DateTime? Dob { get; set; }
         [Column("email")]
         [StringLength(255)]
         public string Email { get; set; } = null!;
-        [Column("isDeleted")]
-        public bool IsDeleted { get; set; }
-        [Column("deletedReason")]
+        [Column("isdeleted")]
+        public bool Isdeleted { get; set; }
+        [Column("deletedreason")]
         [StringLength(255)]
-        public string? DeletedReason { get; set; }
+        public string? Deletedreason { get; set; }
 
-        [InverseProperty(nameof(AccountRole.Account))]
-        public virtual ICollection<AccountRole> AccountRoles { get; set; }
-        [InverseProperty(nameof(AccountSong.Account))]
-        public virtual ICollection<AccountSong> AccountSongs { get; set; }
-        [InverseProperty(nameof(SongReport.Account))]
-        public virtual ICollection<SongReport> SongReports { get; set; }
+        [InverseProperty(nameof(Accountrole.Account))]
+        public virtual ICollection<Accountrole> Accountroles { get; set; }
+        [InverseProperty(nameof(Accountsong.Account))]
+        public virtual ICollection<Accountsong> Accountsongs { get; set; }
+        [InverseProperty(nameof(Songreport.Account))]
+        public virtual ICollection<Songreport> Songreports { get; set; }
     }
 }
