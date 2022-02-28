@@ -72,7 +72,16 @@ builder.Services.AddSwaggerGen(configs =>
 // Add the database context to the services
 builder.Services.AddDbContextPool<ApplicationDbContext>(options =>
 {
-        options.UseNpgsql(builder.Configuration.GetConnectionString("ProductionDB"));
+    if (builder.Environment.IsDevelopment())
+        options.UseNpgsql(builder.Configuration.GetConnectionString("DevelopmentDB"));
+    else
+    {
+        var connectionUrl = Environment.GetEnvironmentVariable("DATABASE_URL")!;
+        var databaseUri = new Uri(connectionUrl!);
+        var db = databaseUri.LocalPath.TrimStart('/');
+        var userInfo = databaseUri.UserInfo.Split(':', StringSplitOptions.RemoveEmptyEntries);
+        options.UseNpgsql($"User ID={userInfo[0]};Password={userInfo[1]};Host={databaseUri.Host};Port={databaseUri.Port};Database={db};Pooling=true;SSL Mode=Require;Trust Server Certificate=True;");
+    }
 });
 
 // Add AutoMapper to the services
@@ -131,6 +140,9 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 // --------------------------------------------------
 // Build the application
 var app = builder.Build();
+
+// Log if the email service is enabled
+app.Logger.LogInformation($"Enable email service: {emailConfig.Enabled}");
 
 // Enable Swagger/OpenAPI middleware
 // Configure the HTTP request pipeline.
