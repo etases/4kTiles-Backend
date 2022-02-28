@@ -5,5 +5,3 @@
 build:
   docker:
     web: Dockerfile
-run:
-  web: ASPNETCORE_URLS=http://*:$PORT dotnet 4kTiles-Backend.dll

@@ -145,10 +145,6 @@ var app = builder.Build();
 // Log if the email service is enabled
 app.Logger.LogInformation("Enable email service: {status}", emailConfig.Enabled);
 app.Logger.LogInformation("Email used: {address}", emailConfig.MailAddress);
-foreach (DictionaryEntry environmentVariable in Environment.GetEnvironmentVariables())
-{
-    app.Logger.LogInformation("Environment: {key} - {value}", environmentVariable.Key, environmentVariable.Value);
-}
 
 // Enable Swagger/OpenAPI middleware
 // Configure the HTTP request pipeline.
