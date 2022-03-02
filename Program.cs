@@ -142,6 +142,22 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 // Build the application
 var app = builder.Build();
 
+// Migrate the database
+if (app.Environment.IsProduction())
+{
+    using var scope = app.Services.CreateScope();
+    try
+    {
+        using var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        context.Database.Migrate();
+        app.Logger.LogInformation("Database migrated");
+    }
+    catch (Exception ex)
+    {
+        app.Logger.LogError(ex, "Failed to migrate database");
+    }
+}
+
 // Log if the email service is enabled
 app.Logger.LogInformation("Enable email service: {status}", emailConfig.Enabled);
 app.Logger.LogInformation("Email used: {address}", emailConfig.MailAddress);
