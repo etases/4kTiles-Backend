@@ -9,7 +9,6 @@ namespace _4kTiles_Backend.DataObjects.DTO.LeaderboardDTO
 {
     public class LeaderboardUserDTO
     {
-        [Required]
         public int AccountId { get; set; }
         public string UserName { get; set; }
         public int SongId { get; set; }

@@ -5,7 +5,6 @@ namespace _4kTiles_Backend.DataObjects.DTO.Report
     public class SongReportDTO
     {
         public int ReportId { get; set; }
-        [Required]
         public int SongId { get; set; }
         public int AccountId { get; set; }
         public string ReportTitle { get; set; } = null!;
