@@ -1,4 +1,6 @@
-﻿namespace _4kTiles_Backend.DataObjects.DTO.Report
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace _4kTiles_Backend.DataObjects.DTO.Report
 {
     public class SongReportDTO
     {

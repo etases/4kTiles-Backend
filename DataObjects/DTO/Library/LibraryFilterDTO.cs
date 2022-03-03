@@ -7,8 +7,8 @@ namespace _4kTiles_Backend.DataObjects.DTO.LibraryFilterDTO;
 
 public class LibraryFilterDTO
 {
-    public string Name { get; set; }
-    public string Tag { get; set; }
-    public string Author { get; set; }
-    public string Genre { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string Tag { get; set; } = string.Empty;
+    public string Author { get; set; } = string.Empty;
+    public string Genre { get; set; } = string.Empty;
 }
