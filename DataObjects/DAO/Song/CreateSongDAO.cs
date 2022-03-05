@@ -6,6 +6,9 @@ public class CreateSongDAO
     public string Author { get; set; }
     public int Bpm { get; set; }
     public string Notes { get; set; }
-    public DateTime ReleaseDate { get; set; }
+    public DateTime ReleaseDate { get; set; } = DateTime.Now;
+    public DateTime UpdatedDate { get; set; } = DateTime.Now;
     public bool IsPublic { get; set; }
+    public ICollection<string> Genres { get; set; }
+    public int CreatorId { get; set; }
 }

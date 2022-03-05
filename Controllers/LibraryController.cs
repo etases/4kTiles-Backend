@@ -1,18 +1,14 @@
 #nullable disable
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+using _4kTiles_Backend.DataObjects.DTO.Library;
+
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using _4kTiles_Backend.Context;
-using _4kTiles_Backend.Entities;
+
 using _4kTiles_Backend.Services.Repositories;
-using _4kTiles_Backend.DataObjects.DTO.LibraryFilterDTO;
 using _4kTiles_Backend.DataObjects.DTO.Response;
-using _4kTiles_Backend.DataObjects.DTO.LibraryGenreDTO;
 using _4kTiles_Backend.DataObjects.DTO.Pagination;
+using _4kTiles_Backend.DataObjects.DTO.Song;
+
+using AutoMapper;
 
 namespace _4kTiles_Backend.Controllers
 {
@@ -22,10 +18,12 @@ namespace _4kTiles_Backend.Controllers
     {
 
         private readonly ILibraryRepository _libraryService;
+        private readonly IMapper _mapper;
 
-        public LibraryController(ILibraryRepository libraryService)
+        public LibraryController(ILibraryRepository libraryService, IMapper mapper)
         {
             _libraryService = libraryService;
+            _mapper = mapper;
         }
 
         /// <summary>
@@ -33,16 +31,16 @@ namespace _4kTiles_Backend.Controllers
         /// </summary>
         /// <returns>List of public songs</returns>
         [HttpGet]
-        public async Task<ActionResult<PaginationResponseDTO<Song>>> GetPublicSongs([FromQuery] PaginationParameter pagination)
+        public async Task<ActionResult<PaginationResponseDTO<SongDTO>>> GetPublicSongs([FromQuery] PaginationParameter pagination)
         {
             var publicSong =await _libraryService.GetPublicSongs(pagination);
 
-            return Ok(new PaginationResponseDTO<Song>
+            return Ok(new PaginationResponseDTO<SongDTO>
             {
                 StatusCode = StatusCodes.Status200OK,
                 Message = "Get public songs",
                 TotalRecords = publicSong.TotalRecords,
-                Data = publicSong.Payload
+                Data = _mapper.Map<IEnumerable<SongDTO>>(publicSong.Payload)
             });
         }
 
@@ -53,22 +51,26 @@ namespace _4kTiles_Backend.Controllers
         /// <param name="pagination"></param>
         /// <returns>List of private songs of user</returns>
         [HttpPost]
-        public async Task<ActionResult<PaginationResponseDTO<Song>>> GetPrivateSongs([FromBody] LibraryUserIdDTO userId, [FromQuery] PaginationParameter pagination)
+        public async Task<ActionResult<PaginationResponseDTO<SongDTO>>> GetPrivateSongs([FromQuery] PaginationParameter pagination)
         {
-            var accountSong = await _libraryService.GetPrivateSongs(userId.Id, pagination);
+            var badResponse = BadRequest(new ResponseDTO
+            {
+                StatusCode = StatusCodes.Status400BadRequest,
+                IsError = true,
+                Message = "Invalid token"
+            });
+            string? accountValueClaim = User.FindFirst("accountId")?.Value;
+            if (accountValueClaim is null) return badResponse;
+            if (!int.TryParse(accountValueClaim, out var accountId)) return badResponse;
+            var accountSong = await _libraryService.GetPrivateSongs(accountId, pagination);
             return accountSong == null
-                ? BadRequest(new ResponseDTO
-                {
-                    StatusCode = StatusCodes.Status400BadRequest,
-                    IsError = true,
-                    Message = "User Id is Invalid (id= " + userId.Id + ")",
-                })
-                : Ok(new PaginationResponseDTO<Song>
+                ? badResponse
+                : Ok(new PaginationResponseDTO<SongDTO>
                 {
                     StatusCode = StatusCodes.Status200OK,
                     Message = "Success get private songs",
                     TotalRecords = accountSong.TotalRecords,
-                    Data = accountSong.Payload
+                    Data = _mapper.Map<IEnumerable<SongDTO>>(accountSong.Payload)
                 });
         }
 
@@ -79,15 +81,15 @@ namespace _4kTiles_Backend.Controllers
         /// <param name="pagination"></param>
         /// <returns>List of public songs satisfied the Filter</returns>
         [HttpPost("search")]
-        public async Task<ActionResult<PaginationResponseDTO<Song>>> GetSongByFilters([FromBody] LibraryFilterDTO filter, [FromQuery] PaginationParameter pagination)
+        public async Task<ActionResult<PaginationResponseDTO<SongDTO>>> GetSongByFilters([FromBody] LibraryFilterDTO filter, [FromQuery] PaginationParameter pagination)
         {
             var result = await _libraryService.GetSongByFilters(filter, pagination);
-            return Ok(new PaginationResponseDTO<Song>
+            return Ok(new PaginationResponseDTO<SongDTO>
             {
                 StatusCode = StatusCodes.Status200OK,
                 Message = "Get songs by filter",
                 TotalRecords = result.TotalRecords,
-                Data = result.Payload
+                Data = _mapper.Map<IEnumerable<SongDTO>>(result.Payload)
             });
         }
 
@@ -98,7 +100,7 @@ namespace _4kTiles_Backend.Controllers
         /// <param name="pagination"></param>
         /// <returns>List of songs sastified the Genre</returns>
         [HttpPost("genre")]
-        public async Task<ActionResult<PaginationResponse<Song>>> GetSongByGenre([FromBody] LibraryGenreDTO genre, [FromQuery] PaginationParameter pagination)
+        public async Task<ActionResult<PaginationResponse<SongDTO>>> GetSongByGenre([FromBody] LibraryGenreDTO genre, [FromQuery] PaginationParameter pagination)
         {
             var result =await _libraryService.GetSongByGenre(genre.Name, pagination);
             if (result == null)
@@ -110,12 +112,12 @@ namespace _4kTiles_Backend.Controllers
                     Message = "There is no song match your Genre"
                 });
             }
-            return Ok(new PaginationResponseDTO<Song>
+            return Ok(new PaginationResponseDTO<SongDTO>
             {
                 StatusCode = StatusCodes.Status200OK,
                 Message = "Get songs by Genre",
                 TotalRecords = result.TotalRecords,
-                Data = result.Payload
+                Data = _mapper.Map<IEnumerable<SongDTO>>(result.Payload)
             });
         }
 

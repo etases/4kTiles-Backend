@@ -42,5 +42,7 @@ namespace _4kTiles_Backend.Entities
         public virtual ICollection<AccountSong> AccountSongs { get; set; }
         [InverseProperty(nameof(SongReport.Account))]
         public virtual ICollection<SongReport> SongReports { get; set; }
+        [InverseProperty(nameof(Song.Creator))]
+        public virtual ICollection<Song> Songs { get; set; }
     }
 }

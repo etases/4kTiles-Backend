@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
 
 namespace _4kTiles_Backend.Entities
 {
@@ -14,7 +11,6 @@ namespace _4kTiles_Backend.Entities
             AccountSongs = new HashSet<AccountSong>();
             SongGenres = new HashSet<SongGenre>();
             SongReports = new HashSet<SongReport>();
-            SongTags = new HashSet<SongTag>();
         }
 
         [Key]
@@ -26,6 +22,8 @@ namespace _4kTiles_Backend.Entities
         [Column("author")]
         [StringLength(255)]
         public string Author { get; set; } = null!;
+        [Column("creatorid")]
+        public int CreatorId { get; set; }
         [Column("bpm")]
         public int Bpm { get; set; }
         [Column("notes")]
@@ -33,6 +31,8 @@ namespace _4kTiles_Backend.Entities
         public string Notes { get; set; } = null!;
         [Column("releasedate", TypeName = "timestamp without time zone")]
         public DateTime ReleaseDate { get; set; }
+        [Column("updateddate", TypeName = "timestamp without time zone")]
+        public DateTime UpdatedDate { get; set; }
         [Column("ispublic")]
         public bool IsPublic { get; set; }
         [Column("isdeleted")]
@@ -47,7 +47,8 @@ namespace _4kTiles_Backend.Entities
         public virtual ICollection<SongGenre> SongGenres { get; set; }
         [InverseProperty(nameof(SongReport.Song))]
         public virtual ICollection<SongReport> SongReports { get; set; }
-        [InverseProperty(nameof(SongTag.Song))]
-        public virtual ICollection<SongTag> SongTags { get; set; }
+        [ForeignKey(nameof(CreatorId))]
+        [InverseProperty("Songs")]
+        public virtual Account Creator { get; set; }
     }
 }

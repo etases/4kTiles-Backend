@@ -1,10 +1,13 @@
 using System.Linq;
 using _4kTiles_Backend.Context;
+using _4kTiles_Backend.DataObjects.DAO.Song;
 using _4kTiles_Backend.DataObjects.DTO;
-using _4kTiles_Backend.DataObjects.DTO.LibraryFilterDTO;
+using _4kTiles_Backend.DataObjects.DTO.Library;
 using _4kTiles_Backend.DataObjects.DTO.Pagination;
 using _4kTiles_Backend.Entities;
 using _4kTiles_Backend.Helpers;
+
+using AutoMapper;
 
 using Microsoft.EntityFrameworkCore;
 
@@ -12,20 +15,22 @@ namespace _4kTiles_Backend.Services.Repositories
 {
     public interface ILibraryRepository
     {
-        Task<PaginationResponse<Song>> GetPublicSongs(PaginationParameter pagination);
-        Task<PaginationResponse<Song>?> GetPrivateSongs(int id, PaginationParameter pagination);
-        Task<PaginationResponse<Song>> GetSongByFilters(LibraryFilterDTO filter, PaginationParameter pagination);
-        Task<PaginationResponse<Song>?> GetSongByGenre(string name, PaginationParameter pagination);
+        Task<PaginationResponse<SongDAO>> GetPublicSongs(PaginationParameter pagination);
+        Task<PaginationResponse<SongDAO>?> GetPrivateSongs(int id, PaginationParameter pagination);
+        Task<PaginationResponse<SongDAO>> GetSongByFilters(LibraryFilterDTO filter, PaginationParameter pagination);
+        Task<PaginationResponse<SongDAO>?> GetSongByGenre(string name, PaginationParameter pagination);
 
 
     }
     public class LibraryRepository : ILibraryRepository
     {
         private readonly ApplicationDbContext _context;
+        private readonly IMapper _mapper;
         private readonly IAccountRepository _accountRepository;
-        public LibraryRepository(ApplicationDbContext context, IAccountRepository accountRepository)
+        public LibraryRepository(ApplicationDbContext context, IAccountRepository accountRepository, IMapper mapper)
         {
             _accountRepository = accountRepository;
+            _mapper = mapper;
             _context = context;
         }
 
@@ -35,16 +40,19 @@ namespace _4kTiles_Backend.Services.Repositories
         /// </summary>
         /// <param name="pagination"></param>
         /// <returns>List of public songs</returns>
-        public async Task<PaginationResponse<Song>> GetPublicSongs(PaginationParameter pagination)
+        public async Task<PaginationResponse<SongDAO>> GetPublicSongs(PaginationParameter pagination)
         {
             var publicSong = await _context.Songs
-                .Where(s => s.IsPublic == true)
+                .Include(s => s.Creator)
+                .Include(s => s.SongGenres)
+                .ThenInclude(sg => sg.Genre)
+                .Where(s => s.IsPublic == true && s.IsDeleted == false)
                 .GetCount(out var count)
                 .GetPage(pagination)
                 .ToListAsync();
-            return new PaginationResponse<Song>()
+            return new PaginationResponse<SongDAO>()
             {
-                Payload = publicSong,
+                Payload = _mapper.Map<IEnumerable<SongDAO>>(publicSong),
                 TotalRecords = count
             };
         }
@@ -55,24 +63,26 @@ namespace _4kTiles_Backend.Services.Repositories
         /// <param name="id"></param>
         /// <param name="pagination"></param>
         /// <returns>List of private songs of user</returns>
-        public async Task<PaginationResponse<Song>?> GetPrivateSongs(int id, PaginationParameter pagination)
+        public async Task<PaginationResponse<SongDAO>?> GetPrivateSongs(int id, PaginationParameter pagination)
         {
             var account = await _accountRepository.GetAccountById(id);
             if (account == null)
             {
                 return null;
             }
-            string name = account.UserName;
             var accountSong = await _context.Songs
-                .Where(s => s.Author == name)
+                .Include(s => s.Creator)
+                .Include(s => s.SongGenres)
+                .ThenInclude(sg => sg.Genre)
+                .Where(s => s.CreatorId == account.AccountId)
                 .GetCount(out var count)
                 .GetPage(pagination)
                 .ToListAsync();
 
-            return new PaginationResponse<Song>()
+            return new PaginationResponse<SongDAO>()
             {
                 TotalRecords = count,
-                Payload = accountSong
+                Payload = _mapper.Map<IEnumerable<SongDAO>>(accountSong)
             };
         }
 
@@ -82,9 +92,13 @@ namespace _4kTiles_Backend.Services.Repositories
         /// <param name="filter"></param>
         /// <param name="pagination"></param>
         /// <returns>List of public songs satisfied the Filter</returns>
-        public async Task<PaginationResponse<Song>> GetSongByFilters(LibraryFilterDTO filter, PaginationParameter pagination)
+        public async Task<PaginationResponse<SongDAO>> GetSongByFilters(LibraryFilterDTO filter, PaginationParameter pagination)
         {
-            var songQ = _context.Songs.Where(s => s.IsPublic == true);
+            var songQ = _context.Songs
+                .Include(s => s.Creator)
+                .Include(s => s.SongGenres)
+                .ThenInclude(sg => sg.Genre)
+                .Where(s => s.IsPublic == true && s.IsDeleted == false);
             if (filter.Name != "")
             {
                 songQ = songQ.Where(s => s.SongName.ToLower().Equals(filter.Name.Trim().ToLower()));
@@ -97,52 +111,14 @@ namespace _4kTiles_Backend.Services.Repositories
             }
             //song by author
 
-            var result =await songQ.ToListAsync();
-
-            if (filter.Tag != "")
-            {
-                List<int> list = new List<int>();
-                string[] tags = filter.Tag.Split("#");
-                foreach (string tag in tags)
-                {
-                    if (tag != "")
-                    {
-                        var add = await TagFilter(tag);
-                        if (add != null)
-                        {
-                            list.AddRange(add);
-                        }
-
-                    }
-                }
-                //list= list of song id have tags
-
-                result.RemoveAll(s => !list.Contains(s.SongId));
-            }
+            var result = await songQ.ToListAsync();
 
             var pagedResult = result.GetCount(out var count).GetPage(pagination);
-            return new PaginationResponse<Song>()
+            return new PaginationResponse<SongDAO>()
             {
                 TotalRecords = count,
-                Payload = pagedResult
+                Payload = _mapper.Map<IEnumerable<SongDAO>>(pagedResult)
             };
-        }
-
-        /// <summary>
-        /// Get list song id satisfied the Tags
-        /// </summary>
-        /// <param name="tagName"></param>
-        /// <returns>List of song id</returns>
-        private async Task<List<int>?> TagFilter(string tagName)
-        {
-            var tag =await _context.Tags.Where(t => t.TagName.Trim().ToLower().Equals(tagName.Trim().ToLower())).FirstOrDefaultAsync();
-            if (tag == null)
-            {
-                return null;
-            }
-
-            var songId =await _context.SongTags.Where(s => s.TagId == tag.TagId).Select(s => s.SongId).ToListAsync();
-            return songId;
         }
 
         /// <summary>
@@ -150,10 +126,10 @@ namespace _4kTiles_Backend.Services.Repositories
         /// </summary>
         /// <param name="name"></param>
         /// <param name="pagination"></param>
-        /// <returns>List of songs sastified the Genre</returns>
-        public async Task<PaginationResponse<Song>?> GetSongByGenre(string name, PaginationParameter pagination)
+        /// <returns>List of songs satisfied the Genre</returns>
+        public async Task<PaginationResponse<SongDAO>?> GetSongByGenre(string name, PaginationParameter pagination)
         {
-            List<int> list = new List<int>();
+            List<int> list = new();
             var add = await GenreFilter(name);
             if (add != null)
             {
@@ -163,14 +139,18 @@ namespace _4kTiles_Backend.Services.Repositories
             {
                 return null;
             }
-            var result = await _context.Songs.Where(s => s.IsPublic == true).ToListAsync();
+            var result = await _context.Songs
+                .Include(s => s.Creator)
+                .Include(s => s.SongGenres)
+                .ThenInclude(sg => sg.Genre)
+                .Where(s => s.IsPublic == true && s.IsDeleted == false).ToListAsync();
             result.RemoveAll(s => !list.Contains(s.SongId));
 
             var pagedResult = result.GetCount(out var count).GetPage(pagination);
-            return new PaginationResponse<Song>()
+            return new PaginationResponse<SongDAO>()
             {
                 TotalRecords = count,
-                Payload = pagedResult
+                Payload = _mapper.Map<IEnumerable<SongDAO>>(pagedResult)
             };
         }
 
