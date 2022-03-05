@@ -8,5 +8,7 @@ public class EditSongDAO
     public int Bpm { get; set; }
     public string Notes { get; set; }
     public bool IsPublic { get; set; }
-    public ICollection<string> Tags { get; set; }
+    public DateTime UpdatedDate { get; set; } = DateTime.Now;
+    public ICollection<string> Genres { get; set; }
+    public int CallerAccountId { get; set; }
 }

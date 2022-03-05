@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace _4kTiles_Backend.DataObjects.DTO.SongDTO;
+namespace _4kTiles_Backend.DataObjects.DTO.Song;
 
 public class EditSongDTO
 {
@@ -16,4 +16,6 @@ public class EditSongDTO
     public string Notes { get; set; }
     [Required]
     public bool IsPublic { get; set; }
+    [Required]
+    public ICollection<string> Genres { get; set; }
 }

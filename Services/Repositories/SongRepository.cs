@@ -13,12 +13,10 @@ namespace _4kTiles_Backend.Services.Repositories
     /// </summary>
     public interface ISongRepository
     {
-        Task<Song?> GetSongByID(int id);
-        Task<int> CreateSong(CreateSongDAO songDAO);
+        Task<SongDAO?> GetSongByID(int id);
+        Task<SongDAO?> CreateSong(CreateSongDAO songDAO);
         Task<int> EditSong(int id, EditSongDAO songDAO);
-        Task<int> AdminEditTag(int id, Song song);
         Task<int> DeactivateSong(int id);
-        bool CheckSongExist(int id);
     }
 
     public class SongRepository : ISongRepository
@@ -40,19 +38,33 @@ namespace _4kTiles_Backend.Services.Repositories
         }
 
 
-        public async Task<Song?> GetSongByID(int id)
+        public async Task<SongDAO?> GetSongByID(int id)
         {
-            return await _dbContext.Songs.Where(s => s.SongId == id).FirstOrDefaultAsync();
+            var song = await _dbContext.Songs
+                .Include(s => s.Creator)
+                .Include(s => s.SongGenres)
+                .ThenInclude(sg => sg.Genre)
+                .Where(s => s.SongId == id)
+                .FirstOrDefaultAsync();
+            return song == null ? null : _mapper.Map<SongDAO>(song);
         }
 
-        public async Task<int> CreateSong(CreateSongDAO songDAO)
+        public async Task<SongDAO?> CreateSong(CreateSongDAO songDAO)
         {
-            Song newSong = _mapper.Map<Song>(songDAO);
-            int rowInsert = 0;
-            _dbContext.Songs.Add(newSong);
-            rowInsert = await _dbContext.SaveChangesAsync();
-            return rowInsert;
+            if (await _accountRepository.GetAccountById(songDAO.CreatorId) == null) return null;
 
+            Song newSong = _mapper.Map<Song>(songDAO);
+            _dbContext.Songs.Add(newSong);
+            await _dbContext.SaveChangesAsync();
+
+            var genres = songDAO.Genres.Select(s => s.ToLower());
+            var songGenres = _dbContext.Genres
+                .Where(g => genres.Contains(g.GenreName.ToLower()))
+                .Select(g => new SongGenre {Song = newSong, Genre = g});
+            await _dbContext.SongGenres.AddRangeAsync(songGenres);
+            await _dbContext.SaveChangesAsync();
+
+            return await GetSongByID(newSong.SongId);
         }
 
         /// <summary>
@@ -64,16 +76,27 @@ namespace _4kTiles_Backend.Services.Repositories
         public async Task<int> EditSong(int id, EditSongDAO songDAO)
         {
             //get song by Id
-            var mySong = await _dbContext.Songs.Where(s => s.SongId == id && s.IsDeleted == false).FirstOrDefaultAsync();
+            var mySong = await _dbContext.Songs.Include(s => s.SongGenres).Where(s => s.SongId == id && s.IsDeleted == false).FirstOrDefaultAsync();
 
             var rowUpdate = 0;
 
             if (mySong != null)
             {
+                if (songDAO.CallerAccountId != mySong.CreatorId) return -2;
+
                 _mapper.Map(songDAO, mySong);
                 _dbContext.Songs.Update(mySong);
-                //TODO edit tag for song.
-                // _dbContext.SongTags.RemoveRange(_dbContext.SongTags.Where(s => s.SongId == mySong.SongId));
+                mySong.UpdatedDate = DateTime.Now;
+                
+                _dbContext.SongGenres.RemoveRange(mySong.SongGenres);
+
+                var genres = songDAO.Genres.Select(s => s.ToLower());
+                var songGenres = _dbContext.Genres
+                    .Where(g => genres.Contains(g.GenreName.ToLower()))
+                    .Select(g => new SongGenre { Song = mySong, Genre = g });
+                await _dbContext.SongGenres.AddRangeAsync(songGenres);
+                await _dbContext.SaveChangesAsync();
+
                 rowUpdate = await _dbContext.SaveChangesAsync();
             }
             else
@@ -82,30 +105,6 @@ namespace _4kTiles_Backend.Services.Repositories
             }
 
             return rowUpdate;
-        }
-
-
-        public async Task<int> AdminEditTag(int id, Song song)
-        {
-            var getSong = await _dbContext.Songs.Where(s => s.SongId == id && s.IsDeleted == false).FirstOrDefaultAsync();
-            var tagUpdate = 0;
-            try
-            {
-                if (getSong != null)
-                {
-                    getSong.SongTags = song.SongTags;
-                    tagUpdate = await _dbContext.SaveChangesAsync();
-                }
-                else
-                {
-                    throw new Exception("SOng not exist!");
-                }
-            }
-            catch (Exception e)
-            {
-                throw new Exception(e.Message);
-            }
-            return tagUpdate;
         }
 
         public async Task<int> DeactivateSong(int id)
@@ -120,11 +119,6 @@ namespace _4kTiles_Backend.Services.Repositories
             var rowDelete = 0;
             rowDelete = await _dbContext.SaveChangesAsync();
             return rowDelete;
-        }
-
-        public bool CheckSongExist(int id)
-        {
-            return _dbContext.Songs.Any(s => s.SongId == id && s.IsDeleted == false);
         }
     }
 }

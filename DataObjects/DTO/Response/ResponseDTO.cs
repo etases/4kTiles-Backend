@@ -19,5 +19,23 @@ namespace _4kTiles_Backend.DataObjects.DTO.Response
         }
     }
 
-    public record ResponseDTO : ResponseDTO<dynamic> {}
+    public record ResponseDTO : ResponseDTO<dynamic>
+    {
+        public ResponseDTO()
+        {
+        }
+
+        public ResponseDTO(int statusCode, bool isError, string message)
+        {
+            StatusCode = statusCode;
+            IsError = isError;
+            Message = message;
+        }
+
+        public ResponseDTO(int statusCode, string message) : this()
+        {
+            StatusCode = statusCode;
+            Message = message;
+        }
+    }
 }

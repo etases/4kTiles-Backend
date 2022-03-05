@@ -1,7 +1,4 @@
-using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
-
-namespace _4kTiles_Backend.DataObjects.DTO.LeaderboardDTO
+namespace _4kTiles_Backend.DataObjects.DTO.Leaderboard
 {
     public class LeaderboardAccountDTO
     {

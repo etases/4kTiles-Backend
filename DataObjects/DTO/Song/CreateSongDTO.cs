@@ -1,9 +1,8 @@
 using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
 
-namespace _4kTiles_Backend.DataObjects.DTO.SongDTO
+namespace _4kTiles_Backend.DataObjects.DTO.Song
 {
-    public class SongDTO
+    public class CreateSongDTO
     {
         [Required]
         [StringLength(100, MinimumLength = 1, ErrorMessage = "Song name must be from 1 to 100 characters")]
@@ -16,8 +15,8 @@ namespace _4kTiles_Backend.DataObjects.DTO.SongDTO
         [Required]
         public string Notes { get; set; } = null!;
         [Required]
-        public DateTime ReleaseDate { get; set; }
-        [Required]
         public bool IsPublic { get; set; }
+        [Required]
+        public ICollection<string> Genres { get; set; }
     }
 }

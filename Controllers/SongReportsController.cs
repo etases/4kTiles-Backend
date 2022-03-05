@@ -1,8 +1,6 @@
 ﻿#nullable disable
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using _4kTiles_Backend.Context;
-using _4kTiles_Backend.Entities;
+
 using _4kTiles_Backend.Services.Repositories;
 using AutoMapper;
 using _4kTiles_Backend.DataObjects.DAO.Report;

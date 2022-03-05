@@ -21,8 +21,6 @@ namespace _4kTiles_Backend.Context
         public virtual DbSet<Song> Songs { get; set; } = null!;
         public virtual DbSet<SongGenre> SongGenres { get; set; } = null!;
         public virtual DbSet<SongReport> SongReports { get; set; } = null!;
-        public virtual DbSet<SongTag> SongTags { get; set; } = null!;
-        public virtual DbSet<Tag> Tags { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -114,24 +112,6 @@ namespace _4kTiles_Backend.Context
                     .HasForeignKey(d => d.SongId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("songreport_songid_fkey");
-            });
-
-            modelBuilder.Entity<SongTag>(entity =>
-            {
-                entity.HasKey(e => e.StId)
-                    .HasName("songtag_pkey");
-
-                entity.HasOne(d => d.Song)
-                    .WithMany(p => p.SongTags)
-                    .HasForeignKey(d => d.SongId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("songtag_songid_fkey");
-
-                entity.HasOne(d => d.Tag)
-                    .WithMany(p => p.SongTags)
-                    .HasForeignKey(d => d.TagId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("songtag_tagid_fkey");
             });
 
             OnModelCreatingPartial(modelBuilder);
