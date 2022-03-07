@@ -12,7 +12,7 @@ using _4kTiles_Backend.Context;
 namespace _4kTiles_Backend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20220228071256_Init")]
+    [Migration("20220307073404_Init")]
     partial class Init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -192,6 +192,10 @@ namespace _4kTiles_Backend.Migrations
                         .HasColumnName("bpm")
                         .HasDefaultValueSql("100");
 
+                    b.Property<int>("CreatorId")
+                        .HasColumnType("integer")
+                        .HasColumnName("creatorid");
+
                     b.Property<string>("DeletedReason")
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(255)
@@ -209,8 +213,7 @@ namespace _4kTiles_Backend.Migrations
 
                     b.Property<string>("Notes")
                         .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)")
+                        .HasColumnType("text")
                         .HasColumnName("notes");
 
                     b.Property<DateTime>("ReleaseDate")
@@ -225,7 +228,13 @@ namespace _4kTiles_Backend.Migrations
                         .HasColumnType("character varying(255)")
                         .HasColumnName("songname");
 
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("updateddate");
+
                     b.HasKey("SongId");
+
+                    b.HasIndex("CreatorId");
 
                     b.ToTable("song");
                 });
@@ -306,57 +315,6 @@ namespace _4kTiles_Backend.Migrations
                     b.ToTable("songreport");
                 });
 
-            modelBuilder.Entity("_4kTiles_Backend.Entities.SongTag", b =>
-                {
-                    b.Property<int>("StId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("stid");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("StId"));
-
-                    b.Property<int>("SongId")
-                        .HasColumnType("integer")
-                        .HasColumnName("songid");
-
-                    b.Property<int>("TagId")
-                        .HasColumnType("integer")
-                        .HasColumnName("tagid");
-
-                    b.HasKey("StId")
-                        .HasName("songtag_pkey");
-
-                    b.HasIndex("SongId");
-
-                    b.HasIndex("TagId");
-
-                    b.ToTable("songtag");
-                });
-
-            modelBuilder.Entity("_4kTiles_Backend.Entities.Tag", b =>
-                {
-                    b.Property<int>("TagId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("tagid");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("TagId"));
-
-                    b.Property<bool>("IsPublisherTag")
-                        .HasColumnType("boolean")
-                        .HasColumnName("ispublishertag");
-
-                    b.Property<string>("TagName")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasColumnName("tagname");
-
-                    b.HasKey("TagId");
-
-                    b.ToTable("tag");
-                });
-
             modelBuilder.Entity("_4kTiles_Backend.Entities.AccountRole", b =>
                 {
                     b.HasOne("_4kTiles_Backend.Entities.Account", "Account")
@@ -393,6 +351,17 @@ namespace _4kTiles_Backend.Migrations
                     b.Navigation("Account");
 
                     b.Navigation("Song");
+                });
+
+            modelBuilder.Entity("_4kTiles_Backend.Entities.Song", b =>
+                {
+                    b.HasOne("_4kTiles_Backend.Entities.Account", "Creator")
+                        .WithMany("Songs")
+                        .HasForeignKey("CreatorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Creator");
                 });
 
             modelBuilder.Entity("_4kTiles_Backend.Entities.SongGenre", b =>
@@ -433,25 +402,6 @@ namespace _4kTiles_Backend.Migrations
                     b.Navigation("Song");
                 });
 
-            modelBuilder.Entity("_4kTiles_Backend.Entities.SongTag", b =>
-                {
-                    b.HasOne("_4kTiles_Backend.Entities.Song", "Song")
-                        .WithMany("SongTags")
-                        .HasForeignKey("SongId")
-                        .IsRequired()
-                        .HasConstraintName("songtag_songid_fkey");
-
-                    b.HasOne("_4kTiles_Backend.Entities.Tag", "Tag")
-                        .WithMany("SongTags")
-                        .HasForeignKey("TagId")
-                        .IsRequired()
-                        .HasConstraintName("songtag_tagid_fkey");
-
-                    b.Navigation("Song");
-
-                    b.Navigation("Tag");
-                });
-
             modelBuilder.Entity("_4kTiles_Backend.Entities.Account", b =>
                 {
                     b.Navigation("AccountRoles");
@@ -459,6 +409,8 @@ namespace _4kTiles_Backend.Migrations
                     b.Navigation("AccountSongs");
 
                     b.Navigation("SongReports");
+
+                    b.Navigation("Songs");
                 });
 
             modelBuilder.Entity("_4kTiles_Backend.Entities.Genre", b =>
@@ -478,13 +430,6 @@ namespace _4kTiles_Backend.Migrations
                     b.Navigation("SongGenres");
 
                     b.Navigation("SongReports");
-
-                    b.Navigation("SongTags");
-                });
-
-            modelBuilder.Entity("_4kTiles_Backend.Entities.Tag", b =>
-                {
-                    b.Navigation("SongTags");
                 });
 #pragma warning restore 612, 618
         }

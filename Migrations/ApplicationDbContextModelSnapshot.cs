@@ -211,8 +211,7 @@ namespace _4kTiles_Backend.Migrations
 
                     b.Property<string>("Notes")
                         .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)")
+                        .HasColumnType("text")
                         .HasColumnName("notes");
 
                     b.Property<DateTime>("ReleaseDate")
@@ -314,57 +313,6 @@ namespace _4kTiles_Backend.Migrations
                     b.ToTable("songreport");
                 });
 
-            modelBuilder.Entity("_4kTiles_Backend.Entities.SongTag", b =>
-                {
-                    b.Property<int>("StId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("stid");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("StId"));
-
-                    b.Property<int>("SongId")
-                        .HasColumnType("integer")
-                        .HasColumnName("songid");
-
-                    b.Property<int>("TagId")
-                        .HasColumnType("integer")
-                        .HasColumnName("tagid");
-
-                    b.HasKey("StId")
-                        .HasName("songtag_pkey");
-
-                    b.HasIndex("SongId");
-
-                    b.HasIndex("TagId");
-
-                    b.ToTable("songtag");
-                });
-
-            modelBuilder.Entity("_4kTiles_Backend.Entities.Tag", b =>
-                {
-                    b.Property<int>("TagId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("tagid");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("TagId"));
-
-                    b.Property<bool>("IsPublisherTag")
-                        .HasColumnType("boolean")
-                        .HasColumnName("ispublishertag");
-
-                    b.Property<string>("TagName")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasColumnName("tagname");
-
-                    b.HasKey("TagId");
-
-                    b.ToTable("tag");
-                });
-
             modelBuilder.Entity("_4kTiles_Backend.Entities.AccountRole", b =>
                 {
                     b.HasOne("_4kTiles_Backend.Entities.Account", "Account")
@@ -452,25 +400,6 @@ namespace _4kTiles_Backend.Migrations
                     b.Navigation("Song");
                 });
 
-            modelBuilder.Entity("_4kTiles_Backend.Entities.SongTag", b =>
-                {
-                    b.HasOne("_4kTiles_Backend.Entities.Song", "Song")
-                        .WithMany("SongTags")
-                        .HasForeignKey("SongId")
-                        .IsRequired()
-                        .HasConstraintName("songtag_songid_fkey");
-
-                    b.HasOne("_4kTiles_Backend.Entities.Tag", "Tag")
-                        .WithMany("SongTags")
-                        .HasForeignKey("TagId")
-                        .IsRequired()
-                        .HasConstraintName("songtag_tagid_fkey");
-
-                    b.Navigation("Song");
-
-                    b.Navigation("Tag");
-                });
-
             modelBuilder.Entity("_4kTiles_Backend.Entities.Account", b =>
                 {
                     b.Navigation("AccountRoles");
@@ -499,13 +428,6 @@ namespace _4kTiles_Backend.Migrations
                     b.Navigation("SongGenres");
 
                     b.Navigation("SongReports");
-
-                    b.Navigation("SongTags");
-                });
-
-            modelBuilder.Entity("_4kTiles_Backend.Entities.Tag", b =>
-                {
-                    b.Navigation("SongTags");
                 });
 #pragma warning restore 612, 618
         }

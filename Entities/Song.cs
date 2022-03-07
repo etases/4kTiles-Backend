@@ -26,8 +26,7 @@ namespace _4kTiles_Backend.Entities
         public int CreatorId { get; set; }
         [Column("bpm")]
         public int Bpm { get; set; }
-        [Column("notes")]
-        [StringLength(1000)]
+        [Column("notes", TypeName = "text")]
         public string Notes { get; set; } = null!;
         [Column("releasedate", TypeName = "timestamp without time zone")]
         public DateTime ReleaseDate { get; set; }

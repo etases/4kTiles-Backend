@@ -62,9 +62,11 @@ namespace _4kTiles_Backend.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     songname = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     author = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    creatorid = table.Column<int>(type: "integer", nullable: false),
                     bpm = table.Column<int>(type: "integer", nullable: false, defaultValueSql: "100"),
-                    notes = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: false),
+                    notes = table.Column<string>(type: "text", nullable: false),
                     releasedate = table.Column<DateTime>(type: "timestamp without time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    updateddate = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     ispublic = table.Column<bool>(type: "boolean", nullable: false),
                     isdeleted = table.Column<bool>(type: "boolean", nullable: false),
                     deletedreason = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true, defaultValueSql: "NULL::character varying")
@@ -72,20 +74,12 @@ namespace _4kTiles_Backend.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_song", x => x.songid);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "tag",
-                columns: table => new
-                {
-                    tagid = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    tagname = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    ispublishertag = table.Column<bool>(type: "boolean", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_tag", x => x.tagid);
+                    table.ForeignKey(
+                        name: "FK_song_account_creatorid",
+                        column: x => x.creatorid,
+                        principalTable: "account",
+                        principalColumn: "accountid",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -189,30 +183,6 @@ namespace _4kTiles_Backend.Migrations
                         principalColumn: "songid");
                 });
 
-            migrationBuilder.CreateTable(
-                name: "songtag",
-                columns: table => new
-                {
-                    stid = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    songid = table.Column<int>(type: "integer", nullable: false),
-                    tagid = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("songtag_pkey", x => x.stid);
-                    table.ForeignKey(
-                        name: "songtag_songid_fkey",
-                        column: x => x.songid,
-                        principalTable: "song",
-                        principalColumn: "songid");
-                    table.ForeignKey(
-                        name: "songtag_tagid_fkey",
-                        column: x => x.tagid,
-                        principalTable: "tag",
-                        principalColumn: "tagid");
-                });
-
             migrationBuilder.CreateIndex(
                 name: "IX_accountrole_accountid",
                 table: "accountrole",
@@ -234,6 +204,11 @@ namespace _4kTiles_Backend.Migrations
                 column: "songid");
 
             migrationBuilder.CreateIndex(
+                name: "IX_song_creatorid",
+                table: "song",
+                column: "creatorid");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_songgenre_genreid",
                 table: "songgenre",
                 column: "genreid");
@@ -252,16 +227,6 @@ namespace _4kTiles_Backend.Migrations
                 name: "IX_songreport_songid",
                 table: "songreport",
                 column: "songid");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_songtag_songid",
-                table: "songtag",
-                column: "songid");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_songtag_tagid",
-                table: "songtag",
-                column: "tagid");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -279,22 +244,16 @@ namespace _4kTiles_Backend.Migrations
                 name: "songreport");
 
             migrationBuilder.DropTable(
-                name: "songtag");
-
-            migrationBuilder.DropTable(
                 name: "role");
 
             migrationBuilder.DropTable(
                 name: "genre");
 
             migrationBuilder.DropTable(
-                name: "account");
-
-            migrationBuilder.DropTable(
                 name: "song");
 
             migrationBuilder.DropTable(
-                name: "tag");
+                name: "account");
         }
     }
 }
