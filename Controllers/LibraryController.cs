@@ -45,12 +45,12 @@ namespace _4kTiles_Backend.Controllers
         }
 
         /// <summary>
-        /// Get private songs by user id (not use owner check)
+        /// Get private songs by user id 
         /// </summary>
         /// <param name="userId"></param>
         /// <param name="pagination"></param>
         /// <returns>List of private songs of user</returns>
-        [HttpPost]
+        [HttpGet("private")]
         public async Task<ActionResult<PaginationResponseDTO<SongDTO>>> GetPrivateSongs([FromQuery] PaginationParameter pagination)
         {
             var badResponse = BadRequest(new ResponseDTO

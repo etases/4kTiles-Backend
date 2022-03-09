@@ -34,7 +34,7 @@ namespace _4kTiles_Backend.Controllers
         /// <param name="pagination"></param>
         /// <returns></returns>
         [HttpGet]
-        public async Task<PaginationResponseDTO<SongReportDTO>> GetSongReportList(ReportFilter reportFilter, [FromQuery] PaginationParameter pagination)
+        public async Task<PaginationResponseDTO<SongReportDTO>> GetSongReportList([FromQuery] ReportFilter reportFilter, [FromQuery] PaginationParameter pagination)
         {
             var reportList = await _songReportRepository.GetListReport(reportFilter, pagination);
             return new PaginationResponseDTO<SongReportDTO>
