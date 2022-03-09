@@ -17,6 +17,7 @@ public class SongProfile : Profile
         CreateMap<Song, SongDAO>()
             .ForMember(dao => dao.CreatorName, o => o.MapFrom(s => s.Creator.UserName))
             .ForMember(dao => dao.Genres, o => o.MapFrom(s => s.SongGenres.Select(sg => sg.Genre.GenreName).Distinct().ToList()));
+        CreateMap<SongDAO, SongInfoDTO>();
         CreateMap<SongDAO, SongDTO>();
     }
 }

@@ -31,8 +31,7 @@ namespace _4kTiles_Backend.Controllers
         {
             var song = await _songRepository.GetSongByID(id);
             return song == null
-                ? NotFound(new ResponseDTO(statusCode: StatusCodes.Status404NotFound, isError: true,
-                    message: "Song Not Found"))
+                ? NotFound(new ResponseDTO(statusCode: StatusCodes.Status404NotFound, isError: true, message: "Song Not Found"))
                 : Ok(new ResponseDTO<SongDTO> {StatusCode = StatusCodes.Status200OK, Data = _mapper.Map<SongDTO>(song), Message = "Song Found"});
         }
 
@@ -42,7 +41,7 @@ namespace _4kTiles_Backend.Controllers
         /// <param name="song">song DTO</param>
         /// <returns>Success message</returns>
         [HttpPost("Create")]
-        public async Task<ActionResult<ResponseDTO<SongDTO>>> CreateNewSong([FromBody] CreateSongDTO song)
+        public async Task<ActionResult<ResponseDTO<SongInfoDTO>>> CreateNewSong([FromBody] CreateSongDTO song)
         {
             var badResponse = BadRequest(new ResponseDTO
             {
@@ -63,11 +62,11 @@ namespace _4kTiles_Backend.Controllers
 
             return dao == null
                 ? badResponse
-                : Created("success", new ResponseDTO<SongDTO>
+                : Created("success", new ResponseDTO<SongInfoDTO>
                 {
                     StatusCode = StatusCodes.Status201Created,
                     Message = "Song Created.",
-                    Data = _mapper.Map<SongDTO>(dao)
+                    Data = _mapper.Map<SongInfoDTO>(dao)
                 });
 
         }
