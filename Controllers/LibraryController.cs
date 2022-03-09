@@ -50,7 +50,7 @@ namespace _4kTiles_Backend.Controllers
         /// <param name="userId"></param>
         /// <param name="pagination"></param>
         /// <returns>List of private songs of user</returns>
-        [HttpGet]
+        [HttpGet("private")]
         public async Task<ActionResult<PaginationResponseDTO<SongDTO>>> GetPrivateSongs([FromQuery] PaginationParameter pagination)
         {
             var badResponse = BadRequest(new ResponseDTO
