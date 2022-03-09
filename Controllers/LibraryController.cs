@@ -80,9 +80,28 @@ namespace _4kTiles_Backend.Controllers
         /// <param name="filter"></param>
         /// <param name="pagination"></param>
         /// <returns>List of public songs satisfied the Filter</returns>
-        [HttpPost("search")]
-        public async Task<ActionResult<PaginationResponseDTO<SongDTO>>> GetSongByFilters([FromBody] LibraryFilterDTO filter, [FromQuery] PaginationParameter pagination)
+        [HttpGet("search")]
+        public async Task<ActionResult<PaginationResponseDTO<SongDTO>>> GetSongByFilters([FromQuery] string searchString, [FromQuery] PaginationParameter pagination)
         {
+            string[] vs = searchString.Split(',');
+
+            LibraryFilterDTO filter = new LibraryFilterDTO();
+            foreach (var s in vs)
+            {
+                var ts = s.Trim();
+                if (ts.StartsWith("#"))
+                {
+                    filter.Author = ts[1..];
+                }else if (ts.StartsWith("@"))
+                {
+                    filter.Genre = ts[1..];
+                }
+                else
+                {
+                    filter.Name = ts;
+                }
+            }
+
             var result = await _libraryService.GetSongByFilters(filter, pagination);
             return Ok(new PaginationResponseDTO<SongDTO>
             {
