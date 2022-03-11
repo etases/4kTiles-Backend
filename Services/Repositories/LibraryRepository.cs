@@ -19,7 +19,7 @@ namespace _4kTiles_Backend.Services.Repositories
         Task<PaginationResponse<SongDAO>?> GetPrivateSongs(int id, PaginationParameter pagination);
         Task<PaginationResponse<SongDAO>> GetSongByFilters(LibraryFilterDTO filter, PaginationParameter pagination);
         Task<PaginationResponse<SongDAO>?> GetSongByGenre(string name, PaginationParameter pagination);
-
+        Task<ICollection<string>> GetGenres();
 
     }
     public class LibraryRepository : ILibraryRepository
@@ -152,6 +152,15 @@ namespace _4kTiles_Backend.Services.Repositories
                 TotalRecords = count,
                 Payload = _mapper.Map<IEnumerable<SongDAO>>(pagedResult)
             };
+        }
+
+        /// <summary>
+        /// Get all genres
+        /// </summary>
+        /// <returns></returns>
+        public async Task<ICollection<string>> GetGenres()
+        {
+            return await _context.Genres.Select(g => g.GenreName).ToListAsync();
         }
 
         /// <summary>

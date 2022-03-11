@@ -119,7 +119,7 @@ namespace _4kTiles_Backend.Controllers
         /// <param name="pagination"></param>
         /// <returns>List of songs sastified the Genre</returns>
         [HttpPost("genre")]
-        public async Task<ActionResult<PaginationResponse<SongInfoDTO>>> GetSongByGenre([FromBody] LibraryGenreDTO genre, [FromQuery] PaginationParameter pagination)
+        public async Task<ActionResult<PaginationResponseDTO<SongInfoDTO>>> GetSongByGenre([FromBody] LibraryGenreDTO genre, [FromQuery] PaginationParameter pagination)
         {
             var result =await _libraryService.GetSongByGenre(genre.Name, pagination);
             if (result == null)
@@ -139,6 +139,21 @@ namespace _4kTiles_Backend.Controllers
                 Data = _mapper.Map<IEnumerable<SongInfoDTO>>(result.Payload)
             });
         }
-
+        
+        /// <summary>
+        /// Get all genres
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("genre")]
+        public async Task<ActionResult<ResponseDTO<ICollection<string>>>> GetGenres()
+        {
+            var genres = await _libraryService.GetGenres();
+            return Ok(new ResponseDTO<ICollection<string>>
+            {
+                StatusCode = StatusCodes.Status200OK,
+                Message = "All genres",
+                Data = genres
+            });
+        }
     }
 }
