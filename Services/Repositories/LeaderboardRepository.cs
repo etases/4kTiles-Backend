@@ -90,10 +90,8 @@ namespace _4kTiles_Backend.Services.Repositories
 
             var leaderboard =
                 await _context.AccountSongs
-                    .GroupBy(x => x.SongId)
-                    .SelectMany(x => x.OrderByDescending(y => y.BestScore).Take(1))
-                    .OrderByDescending(x => x.BestScore)
                     .Where(x => x.AccountId == accountId)
+                    .OrderByDescending(x => x.BestScore)
                     .Include(x => x.Account)
                     .Include(x => x.Song)
                     .GetCount(out var count)
