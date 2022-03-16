@@ -86,22 +86,26 @@ namespace _4kTiles_Backend.Controllers
         [HttpGet("search")]
         public async Task<ActionResult<PaginationResponseDTO<SongInfoDTO>>> GetSongByFilters([FromQuery] string searchString, [FromQuery] PaginationParameter pagination)
         {
-            string[] vs = searchString.Split(',');
-
             LibraryFilterDTO filter = new LibraryFilterDTO();
-            foreach (var s in vs)
+
+            if (!string.IsNullOrEmpty(searchString))
             {
-                var ts = s.Trim();
-                if (ts.StartsWith("#"))
+                string[] vs = searchString.Split(',');
+                foreach (var s in vs)
                 {
-                    filter.Author = ts[1..];
-                }else if (ts.StartsWith("@"))
-                {
-                    filter.Genre = ts[1..];
-                }
-                else
-                {
-                    filter.Name = ts;
+                    var ts = s.Trim();
+                    if (ts.StartsWith("#"))
+                    {
+                        filter.Author = ts[1..];
+                    }
+                    else if (ts.StartsWith("@"))
+                    {
+                        filter.Genre = ts[1..];
+                    }
+                    else
+                    {
+                        filter.Name = ts;
+                    }
                 }
             }
 
