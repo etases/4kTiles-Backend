@@ -88,12 +88,17 @@ namespace _4kTiles_Backend.Services.Repositories
         {
             if (await _accountRepository.GetAccountById(accountId) == null) return null;
 
-            var leaderboard =
+            var maxIdsList =
                 await _context.AccountSongs
-                    .Where(x => x.AccountId == accountId)
-                    .OrderByDescending(x => x.BestScore)
                     .Include(x => x.Account)
                     .Include(x => x.Song)
+                    .GroupBy(x => x.SongId)
+                    .Select(x => x.OrderByDescending(y => y.BestScore).First())
+                    .ToListAsync();
+
+            var leaderboard =
+                maxIdsList
+                    .Where(x => x.AccountId == accountId)
                     .GetCount(out var count)
                     .GetPage(pagination)
                     .Select(accountSong => new LeaderboardUserDTO
@@ -104,7 +109,7 @@ namespace _4kTiles_Backend.Services.Repositories
                         UserName = accountSong.Account.UserName,
                         BestScore = accountSong.BestScore
                     })
-                    .ToListAsync();
+                    .ToList();
 
             return new PaginationResponse<LeaderboardUserDTO>
             {
