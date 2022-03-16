@@ -10,6 +10,8 @@ using _4kTiles_Backend.DataObjects.DTO.Song;
 
 using AutoMapper;
 
+using Microsoft.AspNetCore.Authorization;
+
 namespace _4kTiles_Backend.Controllers
 {
     [Route("api/[controller]")]
@@ -51,6 +53,7 @@ namespace _4kTiles_Backend.Controllers
         /// <param name="pagination"></param>
         /// <returns>List of private songs of user</returns>
         [HttpGet("private")]
+        [Authorize]
         public async Task<ActionResult<PaginationResponseDTO<SongInfoDTO>>> GetPrivateSongs([FromQuery] PaginationParameter pagination)
         {
             var badResponse = BadRequest(new ResponseDTO
@@ -118,8 +121,8 @@ namespace _4kTiles_Backend.Controllers
         /// <param name="genre"></param>
         /// <param name="pagination"></param>
         /// <returns>List of songs sastified the Genre</returns>
-        [HttpPost("genre")]
-        public async Task<ActionResult<PaginationResponseDTO<SongInfoDTO>>> GetSongByGenre([FromBody] LibraryGenreDTO genre, [FromQuery] PaginationParameter pagination)
+        [HttpGet("genre")]
+        public async Task<ActionResult<PaginationResponseDTO<SongInfoDTO>>> GetSongByGenre([FromQuery] LibraryGenreDTO genre, [FromQuery] PaginationParameter pagination)
         {
             var result =await _libraryService.GetSongByGenre(genre.Name, pagination);
             if (result == null)
