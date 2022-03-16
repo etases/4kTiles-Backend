@@ -22,6 +22,8 @@ namespace _4kTiles_Backend.Services.Repositories
 
         Task<AccountDAO?> GetAccountById(int id, bool getDeleted = true);
 
+        Task<ICollection<AccountDAO>> GetAllAccounts(bool getDeleted = true);
+
         Task<ICollection<string>> GetAccountRoleById(int id);
 
         Task<bool> DeactivateAccount(int id, string message);
@@ -130,6 +132,14 @@ namespace _4kTiles_Backend.Services.Repositories
             if (account is null) return null;
             AccountDAO accountDAO = _mapper.Map<AccountDAO>(account);
             return accountDAO;
+        }
+
+        public async Task<ICollection<AccountDAO>> GetAllAccounts(bool getDeleted = true)
+        {
+            var account = await _context.Accounts
+                .Where(a => getDeleted || a.IsDeleted != true)
+                .ToListAsync();
+            return _mapper.Map<ICollection<AccountDAO>>(account);
         }
 
         /// <summary>

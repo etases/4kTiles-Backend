@@ -219,6 +219,23 @@ namespace _4kTiles_Backend.Controllers
         }
 
         /// <summary>
+        /// Get all accounts
+        /// </summary>
+        /// <returns>the accounts</returns>
+        [HttpGet("All")]
+        [Authorize(Policy = "Manager")]
+        public async Task<ActionResult<ResponseDTO<ICollection<AccountDTO>>>> GetAllAccounts()
+        {
+            var accounts = await _accountRepository.GetAllAccounts(false);
+            return Ok(new ResponseDTO<ICollection<AccountDTO>>()
+            {
+                StatusCode = StatusCodes.Status200OK,
+                Message = "Success",
+                Data = _mapper.Map<ICollection<AccountDTO>>(accounts)
+            });
+        }
+
+        /// <summary>
         /// Deactivate the account from the token
         /// </summary>
         /// <returns>The status response</returns>
