@@ -121,7 +121,7 @@ namespace _4kTiles_Backend.Controllers
         /// <param name="genre"></param>
         /// <param name="pagination"></param>
         /// <returns>List of songs sastified the Genre</returns>
-        [HttpGet("genre")]
+        [HttpGet("genre/song")]
         public async Task<ActionResult<PaginationResponseDTO<SongInfoDTO>>> GetSongByGenre([FromQuery] LibraryGenreDTO genre, [FromQuery] PaginationParameter pagination)
         {
             var result =await _libraryService.GetSongByGenre(genre.Name, pagination);
