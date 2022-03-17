@@ -101,13 +101,13 @@ namespace _4kTiles_Backend.Services.Repositories
                 .Where(s => s.IsPublic == true && s.IsDeleted == false);
             if (filter.Name != "")
             {
-                songQ = songQ.Where(s => s.SongName.ToLower().Equals(filter.Name.Trim().ToLower()));
+                songQ = songQ.Where(s => s.SongName.ToLower().Contains(filter.Name.Trim().ToLower()));
             }
             // song by SongName
 
             if (filter.Author != "")
             {
-                songQ = songQ.Where(s => s.Author.ToLower().Equals(filter.Author.Trim().ToLower()));
+                songQ = songQ.Where(s => s.Author.ToLower().Contains(filter.Author.Trim().ToLower()));
             }
             //song by author
 
