@@ -3,6 +3,7 @@ using _4kTiles_Backend.Entities;
 using _4kTiles_Backend.Context;
 using _4kTiles_Backend.DataObjects.DAO.Account;
 using _4kTiles_Backend.DataObjects.DTO.Email;
+using _4kTiles_Backend.DataObjects.DTO.Pagination;
 using _4kTiles_Backend.Helpers;
 
 using Microsoft.EntityFrameworkCore;
@@ -22,7 +23,7 @@ namespace _4kTiles_Backend.Services.Repositories
 
         Task<AccountDAO?> GetAccountById(int id, bool getDeleted = true);
 
-        Task<ICollection<AccountDAO>> GetAllAccounts(bool getDeleted = true);
+        Task<PaginationResponse<AccountDAO>> GetAccounts(string? searchName, PaginationParameter pagination, bool getDeleted = true);
 
         Task<ICollection<string>> GetAccountRoleById(int id);
 
@@ -134,12 +135,28 @@ namespace _4kTiles_Backend.Services.Repositories
             return accountDAO;
         }
 
-        public async Task<ICollection<AccountDAO>> GetAllAccounts(bool getDeleted = true)
+        public async Task<PaginationResponse<AccountDAO>> GetAccounts(string? searchName, PaginationParameter pagination, bool getDeleted = true)
         {
-            var account = await _context.Accounts
-                .Where(a => getDeleted || a.IsDeleted != true)
+
+            var query = _context.Accounts
+                .Where(a => getDeleted || a.IsDeleted != true);
+
+            if (searchName != null)
+            {
+                var lowerSearch = searchName.ToLower();
+                query = query.Where(a =>
+                    a.UserName.ToLower().Contains(lowerSearch) || a.Email.ToLower().Contains(lowerSearch));
+            }
+
+            var account = await query
+                .GetCount(out var count)
+                .GetPage(pagination)
                 .ToListAsync();
-            return _mapper.Map<ICollection<AccountDAO>>(account);
+            return new PaginationResponse<AccountDAO>()
+            {
+                TotalRecords = count,
+                Payload = _mapper.Map<IEnumerable<AccountDAO>>(account)
+            };
         }
 
         /// <summary>

@@ -1,6 +1,7 @@
 using _4kTiles_Backend.DataObjects.DAO.Account;
 using _4kTiles_Backend.DataObjects.DTO.Account;
 using _4kTiles_Backend.DataObjects.DTO.Email;
+using _4kTiles_Backend.DataObjects.DTO.Pagination;
 using _4kTiles_Backend.Services.Repositories;
 using _4kTiles_Backend.DataObjects.DTO.Response;
 
@@ -219,19 +220,20 @@ namespace _4kTiles_Backend.Controllers
         }
 
         /// <summary>
-        /// Get all accounts
+        /// Get accounts
         /// </summary>
         /// <returns>the accounts</returns>
         [HttpGet("All")]
         [Authorize(Policy = "Manager")]
-        public async Task<ActionResult<ResponseDTO<ICollection<AccountDTO>>>> GetAllAccounts()
+        public async Task<ActionResult<PaginationResponseDTO<AccountDTO>>> GetAccounts([FromQuery] string? name, [FromQuery] PaginationParameter pagination)
         {
-            var accounts = await _accountRepository.GetAllAccounts(false);
-            return Ok(new ResponseDTO<ICollection<AccountDTO>>()
+            var accounts = await _accountRepository.GetAccounts(searchName: name, pagination: pagination, getDeleted: false);
+            return Ok(new PaginationResponseDTO<AccountDTO>()
             {
                 StatusCode = StatusCodes.Status200OK,
                 Message = "Success",
-                Data = _mapper.Map<ICollection<AccountDTO>>(accounts)
+                TotalRecords = accounts.TotalRecords,
+                Data = _mapper.Map<IEnumerable<AccountDTO>>(accounts.Payload)
             });
         }
 
