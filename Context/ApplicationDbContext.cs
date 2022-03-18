@@ -24,6 +24,8 @@ namespace _4kTiles_Backend.Context
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<Role>()
+                .HasData(new Role {RoleId = 1, RoleName = "Admin"}, new Role {RoleId = 2, RoleName = "User"});
             modelBuilder.Entity<Account>(entity =>
             {
                 entity.Property(e => e.DeletedReason).HasDefaultValueSql("NULL::character varying");

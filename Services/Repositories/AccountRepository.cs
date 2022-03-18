@@ -139,6 +139,8 @@ namespace _4kTiles_Backend.Services.Repositories
         {
 
             var query = _context.Accounts
+                .Include(a => a.AccountRoles)
+                .ThenInclude(ar => ar.Role)
                 .Where(a => getDeleted || a.IsDeleted != true);
 
             if (searchName != null)
