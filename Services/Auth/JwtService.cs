@@ -47,7 +47,7 @@ namespace _4kTiles_Backend.Services.Auth
             // Generate a new JWT token
             var token = new JwtSecurityToken(
                 claims: claims,
-                expires: DateTime.Now.AddMinutes(30),
+                expires: DateTime.Now.AddHours(24),
                 signingCredentials: credentials
             );
             // Write token

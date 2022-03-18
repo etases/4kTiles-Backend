@@ -50,11 +50,10 @@ namespace _4kTiles_Backend.Controllers
                 Message = "Invalid token"
             });
 
-            // // Get the account Id
-            // string? accountValueClaim = User.FindFirst("accountId")?.Value;
-            // if (accountValueClaim is null) return badResponse;
-            // if (!int.TryParse(accountValueClaim, out var accountId)) return badResponse;
-            var accountId = 1;
+            // Get the account Id
+            string? accountValueClaim = User.FindFirst("accountId")?.Value;
+            if (accountValueClaim is null) return badResponse;
+            if (!int.TryParse(accountValueClaim, out var accountId)) return badResponse;
 
             //Mapping data from source object to new obj.
             CreateSongDAO songDAO = _mapper.Map<CreateSongDAO>(song);
