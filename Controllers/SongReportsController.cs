@@ -117,7 +117,7 @@ namespace _4kTiles_Backend.Controllers
         /// <param name="status">Report status</param>
         /// <returns></returns>
         [HttpPut("{id}")]
-        public async Task<ActionResult<ResponseDTO>> ChangeReportStatus(int id, bool status)
+        public async Task<ActionResult<ResponseDTO>> ChangeReportStatus(int id,[FromBody] bool status)
         {
             // check if Report not exists
             if (await _songReportRepository.ChangeReportStatus(id, status) < 0)
