@@ -75,6 +75,7 @@ namespace _4kTiles_Backend.Services.Repositories
                 .Include(s => s.SongGenres)
                 .ThenInclude(sg => sg.Genre)
                 .Where(s => s.CreatorId == account.AccountId)
+                .Where(s => s.IsDeleted == false)
                 .GetCount(out var count)
                 .GetPage(pagination)
                 .ToListAsync();
